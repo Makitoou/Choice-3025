@@ -1,0 +1,57 @@
+/* Кастомизация кнопок */
+.btn-outline-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-border-color: #fff;
+  --bs-btn-hover-bg: #ffffff40;
+  --bs-btn-active-bg: #fff;
+  --bs-btn-active-color: #706a8d;
+}
+
+/* Адаптивный размер заголовка */
+h1 {
+  font-size: 40px;
+}
+body {
+  background-color: #706a8d !important; /* Принудительно устанавливаем фон */
+  min-height: 100vh;
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: radial-gradient(circle, #1a1a2e, #16213e);
+  position: relative;
+}
+.star {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: twinkle 2s infinite alternate;
+}
+@keyframes twinkle {
+  from {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.moving-star {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: move 10s linear infinite;
+}
+@keyframes move {
+  from {
+    transform: translateY(100vh);
+  }
+  to {
+    transform: translateY(-100vh);
+  }
+}
+.content {
+  position: relative;
+  z-index: 1;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
