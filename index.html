@@ -19,20 +19,17 @@
     <title>Выбор-3025</title>
   </head>
   <body class="user-select-none font-monospace">
-    <!-- Канвас как фон -->
     <canvas
       id="spaceCanvas"
       class="position-fixed top-0 start-0 w-100 h-100 z-0"
     ></canvas>
-    <!-- Контент поверх канваса -->
     <div class="container position-relative z-1 min-vh-100 d-flex flex-column">
       <div class="row flex-grow-1 align-items-center">
-        <!-- Левая колонка -->
         <div class="col-md-5 text-center text-md-start">
           <h1
             class="display-1 fw-bold neon-title position-relative"
             style="
-              color: #8a2be2; /* Фиолетовый цвет */
+              color: #8a2be2;
               text-shadow: 0 0 15px rgba(138, 43, 226, 0.9);
               transition: all 0.3s ease;
               cursor: default;
@@ -43,10 +40,8 @@
             Выбор-3025
           </h1>
         </div>
-        <!-- Правая колонка с кнопками -->
         <div class="col-md-7">
           <div class="d-flex flex-column gap-3 w-75 mx-auto">
-            <!-- Кнопка "Начать экспедицию" -->
             <button
               class="btn py-2 fs-5 position-relative"
               id="play-btn"
@@ -64,8 +59,6 @@
             >
               Начать экспедицию
             </button>
-
-            <!-- Кнопка "Архив" -->
             <button
               class="btn py-2 fs-5 position-relative"
               id="archive-btn"
@@ -80,11 +73,10 @@
               onmouseout="this.style.backgroundColor='transparent'; this.style.color='#8A2BE2'; this.style.transform='none'; this.style.boxShadow='none';"
               onmousedown="this.style.backgroundColor='#6A1B9A';"
               onmouseup="this.style.backgroundColor='#8A2BE2';"
+              onclick="window.open('html/archive.html','_self');"
             >
               Архив
             </button>
-
-            <!-- Кнопка "Настройки" -->
             <button
               class="btn py-2 fs-5 position-relative"
               id="settings-btn"
@@ -99,6 +91,7 @@
               onmouseout="this.style.backgroundColor='transparent'; this.style.color='#8A2BE2'; this.style.transform='none'; this.style.boxShadow='none';"
               onmousedown="this.style.backgroundColor='#6A1B9A';"
               onmouseup="this.style.backgroundColor='#8A2BE2';"
+              onclick="window.open('html/settings.html','_self');"
             >
               Настройки
             </button>
@@ -106,7 +99,6 @@
         </div>
       </div>
     </div>
-    <!-- Скрипты Bootstrap и ваши -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/script.js"></script>
   </body>

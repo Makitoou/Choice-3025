@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+    <title>Выбор-3025</title>
+  </head>
+  <body class="user-select-none font-monospace">
+    <canvas
+      id="spaceCanvas"
+      class="position-fixed top-0 start-0 w-100 h-100 z-0"
+    ></canvas>
+    <div class="container position-relative z-1 min-vh-100 d-flex flex-column">
+      <div class="row justify-content-center mt-5">
+        <div class="col-12 text-center mb-4">
+          <h1
+            class="display-1 fw-bold neon-title position-relative"
+            style="
+              color: #8a2be2;
+              text-shadow: 0 0 15px rgba(138, 43, 226, 0.9);
+              cursor: default;
+            "
+          >
+            Архив
+          </h1>
+        </div>
+
+        <div class="col-md-8 col-lg-6">
+          <div
+            class="settings-card p-4 rounded-3 shadow-lg position-relative"
+            style="
+              background: rgba(255, 255, 255, 0.1);
+              backdrop-filter: blur(10px);
+              border: 1px solid rgba(138, 43, 226, 0.3);
+            "
+          >
+            <button
+              type="button"
+              class="btn-close position-absolute top-0 end-0 mt-1 me-1 z-2"
+              aria-label="Закрыть"
+              style="filter: invert(1); margin-top: 20px; margin-left: 10px"
+              id="back"
+              onclick="window.open('../index.html','_self');"
+            ></button>
+
+            <div
+              class="list-group d-flex flex-row justify-content-center gap-3 z-1"
+              style="height: 30vh; margin-top: 2.5rem"
+            >
+              <div
+                class="list-group-item bg-transparent text-white d-flex align-items-center p-0"
+                style="
+                  width: 200px;
+                  height: 140px;
+                  border: 2px solid #8a2be2 !important;
+                "
+              >
+                <span class="w-100 text-center">Пусто</span>
+              </div>
+              <div
+                class="list-group-item bg-transparent text-white d-flex align-items-center p-0"
+                style="
+                  width: 200px;
+                  height: 140px;
+                  border: 2px solid #8a2be2 !important;
+                "
+              >
+                <span class="w-100 text-center">Пусто</span>
+              </div>
+              <div
+                class="list-group-item bg-transparent text-white d-flex align-items-center p-0"
+                style="
+                  width: 200px;
+                  height: 140px;
+                  border: 2px solid #8a2be2 !important;
+                "
+              >
+                <span class="w-100 text-center">Пусто</span>
+              </div>
+              <div
+                class="list-group-item bg-transparent text-white d-flex align-items-center p-0"
+                style="
+                  width: 200px;
+                  height: 140px;
+                  border: 2px solid #8a2be2 !important;
+                "
+              >
+                <span class="w-100 text-center">Пусто</span>
+              </div>
+              <div
+                class="list-group-item bg-transparent text-white d-flex align-items-center p-0"
+                style="
+                  width: 200px;
+                  height: 140px;
+                  border: 2px solid #8a2be2 !important;
+                "
+              >
+                <span class="w-100 text-center">Пусто</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/script.js"></script>
+  </body>
+</html>
