@@ -1,3 +1,61 @@
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("play").addEventListener("click", () => {
+    const grid = document.createElement("div");
+    grid.classList.add("grid")
+    document.querySelector("#playfield .field").appendChild(grid);
+    play();
+    document.getElementById("menu").classList.add('hidden');
+    setTimeout(() => {
+      document.getElementById("menu").style.display = 'none';
+      document.getElementById("playfield").style.display = 'flex';
+      setTimeout(() => {
+        document.getElementById("playfield").classList.remove('hidden');
+      }, 100);
+    }, 300);
+  });
+
+  document.getElementById("open-settings").addEventListener("click", () => {
+    document.getElementById("menu").classList.add('hidden');
+    setTimeout(() => {
+      document.getElementById("menu").style.display = 'none';
+      document.getElementById("settings").style.display = 'flex';
+      setTimeout(() => {
+        document.getElementById("settings").classList.remove('hidden');
+      }, 100);
+    }, 300);
+  });
+
+  document.getElementById("open-rate").addEventListener("click", () => {
+    document.getElementById("menu").classList.add('hidden');
+    setTimeout(() => {
+      document.getElementById("menu").style.display = 'none';
+      document.getElementById("rate").style.display = 'flex';
+      setTimeout(() => {
+        document.getElementById("rate").classList.remove('hidden');
+      }, 100);
+    }, 300);
+  });
+
+  Array.from(document.getElementsByClassName("open-menu")).forEach((el) => {
+    el.addEventListener("click", () => {
+      document.getElementById("playfield").classList.add('hidden');
+      document.getElementById("settings").classList.add('hidden');
+      document.getElementById("rate").classList.add('hidden');
+      setTimeout(() => {
+        document.getElementById("playfield").style.display = 'none';
+        if (document.querySelector(".grid")) {
+          document.querySelector(".grid").remove();
+        }
+        document.getElementById("settings").style.display = 'none';
+        document.getElementById("rate").style.display = 'none';
+        document.getElementById("menu").style.display = 'flex';
+        setTimeout(() => {
+          document.getElementById("menu").classList.remove('hidden');
+        }, 100);
+      }, 300);
+    });
+  });
+});
 const canvas = document.getElementById("spaceCanvas");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;

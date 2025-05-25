@@ -9,38 +9,105 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
     <title>Выбор-3025</title>
   </head>
-  <body>
-    <canvas id="spaceCanvas">
-      <div class="container d-flex flex-column min-vh-100">
-        <div class="row flex-grow-1 align-items-center">
-          <!-- Левая колонка -->
-          <div class="col-md-6 text-center text-md-start">
-            <h1 class="display-4 fw-bold">Выбор-3025</h1>
-          </div>
+  <body class="user-select-none font-monospace">
+    <!-- Канвас как фон -->
+    <canvas
+      id="spaceCanvas"
+      class="position-fixed top-0 start-0 w-100 h-100 z-0"
+    ></canvas>
+    <!-- Контент поверх канваса -->
+    <div class="container position-relative z-1 min-vh-100 d-flex flex-column">
+      <div class="row flex-grow-1 align-items-center">
+        <!-- Левая колонка -->
+        <div class="col-md-5 text-center text-md-start">
+          <h1
+            class="display-1 fw-bold neon-title position-relative"
+            style="
+              color: #8a2be2; /* Фиолетовый цвет */
+              text-shadow: 0 0 15px rgba(138, 43, 226, 0.9);
+              transition: all 0.3s ease;
+              cursor: default;
+            "
+            onmouseover="this.style.transform='translateY(-3px)'"
+            onmouseout="this.style.transform='none'"
+          >
+            Выбор-3025
+          </h1>
+        </div>
+        <!-- Правая колонка с кнопками -->
+        <div class="col-md-7">
+          <div class="d-flex flex-column gap-3 w-75 mx-auto">
+            <!-- Кнопка "Начать экспедицию" -->
+            <button
+              class="btn py-2 fs-5 position-relative"
+              id="play-btn"
+              style="
+                color: #8a2be2;
+                border: 2px solid #8a2be2;
+                background: transparent;
+                transition: all 0.3s ease;
+                text-shadow: 0 0 8px rgba(138, 43, 226, 0.5);
+              "
+              onmouseover="this.style.backgroundColor='#8A2BE2'; this.style.color='white'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 15px rgba(138, 43, 226, 0.5)';"
+              onmouseout="this.style.backgroundColor='transparent'; this.style.color='#8A2BE2'; this.style.transform='none'; this.style.boxShadow='none';"
+              onmousedown="this.style.backgroundColor='#6A1B9A';"
+              onmouseup="this.style.backgroundColor='#8A2BE2';"
+            >
+              Начать экспедицию
+            </button>
 
-          <!-- Правая колонка с кнопками -->
-          <div class="col-md-6">
-            <div class="d-flex flex-column gap-3 w-75 mx-auto">
-              <button class="btn btn-outline-primary py-2 fs-5">
-                Начать экспедицию
-              </button>
-              <button class="btn btn-outline-primary py-2 fs-5">Архив</button>
-              <button class="btn btn-outline-primary py-2 fs-5">
-                Настройки
-              </button>
-            </div>
+            <!-- Кнопка "Архив" -->
+            <button
+              class="btn py-2 fs-5 position-relative"
+              id="archive-btn"
+              style="
+                color: #8a2be2;
+                border: 2px solid #8a2be2;
+                background: transparent;
+                transition: all 0.3s ease;
+                text-shadow: 0 0 8px rgba(138, 43, 226, 0.5);
+              "
+              onmouseover="this.style.backgroundColor='#8A2BE2'; this.style.color='white'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 15px rgba(138, 43, 226, 0.5)';"
+              onmouseout="this.style.backgroundColor='transparent'; this.style.color='#8A2BE2'; this.style.transform='none'; this.style.boxShadow='none';"
+              onmousedown="this.style.backgroundColor='#6A1B9A';"
+              onmouseup="this.style.backgroundColor='#8A2BE2';"
+            >
+              Архив
+            </button>
+
+            <!-- Кнопка "Настройки" -->
+            <button
+              class="btn py-2 fs-5 position-relative"
+              id="settings-btn"
+              style="
+                color: #8a2be2;
+                border: 2px solid #8a2be2;
+                background: transparent;
+                transition: all 0.3s ease;
+                text-shadow: 0 0 8px rgba(138, 43, 226, 0.5);
+              "
+              onmouseover="this.style.backgroundColor='#8A2BE2'; this.style.color='white'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 15px rgba(138, 43, 226, 0.5)';"
+              onmouseout="this.style.backgroundColor='transparent'; this.style.color='#8A2BE2'; this.style.transform='none'; this.style.boxShadow='none';"
+              onmousedown="this.style.backgroundColor='#6A1B9A';"
+              onmouseup="this.style.backgroundColor='#8A2BE2';"
+            >
+              Настройки
+            </button>
           </div>
         </div>
       </div>
-    </canvas>
+    </div>
+    <!-- Скрипты Bootstrap и ваши -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/script.js"></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
-      integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
-      crossorigin="anonymous"
-    ></script>
   </body>
 </html>
