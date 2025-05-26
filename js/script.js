@@ -126,10 +126,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const playButton = document.getElementById("play-btn");
   let isIntroShown = localStorage.getItem("introShown");
 
-  if (isIntroShown) {
-    playButton.onclick = () => window.open("html/play.html", "_self");
-    return;
-  }
+  // if (isIntroShown) {
+  //   playButton.onclick = () => window.open("html/play.html", "_self");
+  //   return;
+  // }
   playButton.addEventListener("click", async (e) => {
     e.preventDefault();
     let typewriter;
