@@ -123,4 +123,136 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   animate(0);
+  const playButton = document.getElementById("play-btn");
+  let isIntroShown = localStorage.getItem("introShown");
+
+  if (isIntroShown) {
+    playButton.onclick = () => window.open("html/play.html", "_self");
+    return;
+  }
+  playButton.addEventListener("click", async (e) => {
+    e.preventDefault();
+    let typewriter;
+    let data;
+
+    const overlay = document.createElement("div");
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      color: #8A2BE2;
+      font-family: 'Space Mono', monospace;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20%;
+      text-align: center;
+      font-size: 1.5rem;
+      line-height: 2;
+      cursor: pointer;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    `;
+    const skipBtn = document.createElement("div");
+    skipBtn.textContent = "[ESC] Пропустить";
+    skipBtn.style.cssText = `
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    color: #8A2BE2;
+    opacity: 0.7;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: opacity 0.5s;
+  `;
+    skipBtn.onmouseover = () => (skipBtn.style.opacity = "1");
+    skipBtn.onmouseout = () => (skipBtn.style.opacity = "0.7");
+
+    const textContainer = document.createElement("div");
+
+    let isSkipped = false;
+    const skipHandler = () => {
+      if (isSkipped || !data) return;
+      isSkipped = true;
+      if (typewriter) {
+        typewriter.stop();
+      }
+
+      const overlay = document.createElement("div");
+      overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      z-index: 1000;
+    `;
+      document.body.appendChild(overlay);
+      setTimeout(() => {
+        window.open("../html/play.html", "_self");
+      }, 500);
+    };
+    skipBtn.addEventListener("click", skipHandler);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") skipHandler();
+    });
+    overlay.appendChild(skipBtn);
+    overlay.style.display = "flex";
+    textContainer.style.visibility = "hidden";
+    overlay.appendChild(textContainer);
+    document.body.appendChild(overlay);
+
+    try {
+      const response = await fetch("json/prehistory.json");
+      data = await response.json();
+      textContainer.style.visibility = "visible";
+
+      typewriter = typewriterEffect(textContainer, data.intro, 70);
+      setInterval(() => {
+        typewriter.removeOldLines();
+      }, 20000);
+      await typewriter;
+
+      localStorage.setItem("introShown", "true");
+      overlay.onclick = () => {
+        overlay.remove();
+        window.open("html/play.html", "_self");
+      };
+    } catch (error) {
+      console.error("Ошибка:", error);
+      window.open("html/play.html", "_self");
+    }
+  });
 });
+function typewriterEffect(element, text, speed = 50) {
+  let isTyping = true;
+  let resolvePromise;
+  const promise = new Promise((resolve) => {
+    resolvePromise = resolve;
+    let i = 0;
+    function type() {
+      if (!isTyping) return resolve();
+      if (i < text.length) {
+        element.innerHTML += text.charAt(i) === "\n" ? "<br>" : text.charAt(i);
+        element.scrollTop = element.scrollHeight;
+        i++;
+        setTimeout(type, speed);
+      } else {
+        resolve();
+      }
+    }
+    type();
+  });
+
+  promise.stop = () => {
+    isTyping = false;
+    resolvePromise();
+  };
+
+  return promise;
+}

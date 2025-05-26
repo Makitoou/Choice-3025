@@ -9,17 +9,20 @@ let planets = [];
 let surfaceNoise = [];
 
 function generateSurfaceNoise() {
-    const segmentWidth = 15;
-    surfaceNoise = [];
-    
-    for(let x = -segmentWidth; x <= canvas.width + segmentWidth; x += segmentWidth) {
-        const noise = (
-            Math.sin(x * 0.02) * 15 + 
-            Math.cos(x * 0.015 * 2) * 10 +
-            Math.random() * 4
-        );
-        surfaceNoise.push({x, y: noise});
-    }
+  const segmentWidth = 15;
+  surfaceNoise = [];
+
+  for (
+    let x = -segmentWidth;
+    x <= canvas.width + segmentWidth;
+    x += segmentWidth
+  ) {
+    const noise =
+      Math.sin(x * 0.02) * 15 +
+      Math.cos(x * 0.015 * 2) * 10 +
+      Math.random() * 4;
+    surfaceNoise.push({ x, y: noise });
+  }
 }
 
 function init() {
@@ -183,3 +186,180 @@ function animate(timestamp) {
 }
 
 animate(0);
+
+//Карта
+
+const canvas_map = document.getElementById("gameCanvas");
+const ctx_map = canvas_map.getContext("2d");
+
+document.getElementById("mapButton").addEventListener("click", () => {
+  document.body.classList.add("map-visible");
+  resizeCanvas();
+  canvas_map.width = mapWidth;
+  canvas_map.height = mapHeight;
+  draw_map();
+});
+
+document.querySelector(".close-btn").addEventListener("click", () => {
+  document.body.classList.remove("d-block");
+});
+
+// Размеры карты
+const mapWidth = 600;
+const mapHeight = 400;
+const cornerRadius = 0;
+
+// Цвета
+const colors = {
+  background: "#483d8b",
+  planets_color: ["#0000FF", "#808000", "#00FFFF", "#211E1B"],
+};
+
+// Позиции планет
+const planets_map = [
+  { x: 0.1, y: 0.2 }, // top-left
+  { x: 0.5, y: 0.2 }, // top-right
+  { x: 0.8, y: 0.4 }, // bottom-right
+  { x: 0.2, y: 0.8 }, // bottom-left
+];
+
+function drawRoundedRect(x, y, width, height, radius) {
+  ctx_map.beginPath();
+  ctx_map.moveTo(x + radius, y);
+  ctx_map.arcTo(x + width, y, x + width, y + height, radius);
+  ctx_map.arcTo(x + width, y + height, x, y + height, radius);
+  ctx_map.arcTo(x, y + height, x, y, radius);
+  ctx_map.arcTo(x, y, x + width, y, radius);
+  ctx_map.closePath();
+  ctx_map.fillStyle = "#D9D9D9";
+  ctx_map.fill();
+}
+
+function drawConnections(mapX, mapY) {
+  ctx_map.beginPath();
+  // Горизонтальные линии
+  ctx_map.moveTo(mapX + mapWidth * 0.1, mapY + mapHeight * 0.2);
+  ctx_map.lineTo(mapX + mapWidth * 0.5, mapY + mapHeight * 0.2);
+
+  ctx_map.moveTo(mapX + mapWidth * 0.2, mapY + mapHeight * 0.8);
+  ctx_map.lineTo(mapX + mapWidth * 0.8, mapY + mapHeight * 0.4);
+
+  // Вертикальные линии
+  ctx_map.moveTo(mapX + mapWidth * 0.1, mapY + mapHeight * 0.2);
+  ctx_map.lineTo(mapX + mapWidth * 0.2, mapY + mapHeight * 0.8);
+
+  ctx_map.moveTo(mapX + mapWidth * 0.5, mapY + mapHeight * 0.2);
+  ctx_map.lineTo(mapX + mapWidth * 0.8, mapY + mapHeight * 0.4);
+
+  // Диагонали
+  ctx_map.moveTo(mapX + mapWidth * 0.1, mapY + mapHeight * 0.2);
+  ctx_map.lineTo(mapX + mapWidth * 0.8, mapY + mapHeight * 0.4);
+
+  ctx_map.moveTo(mapX + mapWidth * 0.5, mapY + mapHeight * 0.2);
+  ctx_map.lineTo(mapX + mapWidth * 0.2, mapY + mapHeight * 0.8);
+
+  ctx_map.strokeStyle = "black";
+  ctx_map.lineWidth = 2;
+  ctx_map.stroke();
+}
+const planetRadii = {
+  "#00FFFF": 20,
+  "#808000": 30,
+  "#0000FF": 40,
+  "#211E1B": 50,
+};
+function drawPlanets(mapX, mapY) {
+  planets_map.forEach((pos, i) => {
+    ctx_map.beginPath();
+    const radius = planetRadii[colors.planets_color[i]] || 20;
+    ctx_map.arc(
+      mapX + mapWidth * pos.x,
+      mapY + mapHeight * pos.y,
+      radius,
+      0,
+      Math.PI * 2
+    );
+    ctx_map.fillStyle = colors.planets_color[i];
+    ctx_map.fill();
+  });
+}
+
+function draw_map() {
+  ctx_map.fillStyle = colors.background;
+  ctx_map.fillRect(0, 0, canvas_map.width, canvas_map.height);
+
+  const scaleX = canvas_map.width / 600;
+  const scaleY = canvas_map.height / 400;
+
+  ctx_map.save();
+  ctx_map.scale(scaleX, scaleY);
+  drawRoundedRect(0, 0, 600, 400, 50);
+  drawConnections(0, 0);
+  drawPlanets(0, 0);
+  ctx_map.restore();
+}
+
+window.addEventListener("resize", () => {
+  draw_map();
+});
+
+draw_map();
+let hoveredPlanet = null;
+
+function getPlanetPositions() {
+  const rect = canvas_map.getBoundingClientRect();
+  const scaleX = canvas_map.width / 600;
+  const scaleY = canvas_map.height / 400;
+
+  return planets_map.map((pos, i) => ({
+    x: pos.x * 600 * scaleX,
+    y: pos.y * 400 * scaleY,
+    radius: planetRadii[colors.planets_color[i]] * Math.min(scaleX, scaleY),
+    color: colors.planets_color[i],
+  }));
+}
+
+canvas_map.addEventListener("mousemove", (e) => {
+  const rect = canvas_map.getBoundingClientRect();
+  const scaleX = canvas_map.width / 600;
+  const scaleY = canvas_map.height / 400;
+
+  const mouseX = (e.clientX - rect.left) / scaleX;
+  const mouseY = (e.clientY - rect.top) / scaleY;
+
+  hoveredPlanet = planets_map.find((pos, i) => {
+    const planetX = pos.x * 600;
+    const planetY = pos.y * 400;
+    const radius = planetRadii[colors.planets_color[i]];
+    return Math.hypot(mouseX - planetX, mouseY - planetY) < radius;
+  });
+
+  draw_map();
+  if (hoveredPlanet) drawHoverEffect();
+});
+
+canvas_map.addEventListener("mouseout", () => {
+  hoveredPlanet = null;
+  draw_map();
+});
+
+function drawHoverEffect() {
+  if (!hoveredPlanet) return;
+
+  const scaleX = canvas_map.width / 600;
+  const scaleY = canvas_map.height / 400;
+  const radius = planetRadii[hoveredPlanet.color] * Math.min(scaleX, scaleY);
+
+  ctx_map.save();
+  ctx_map.beginPath();
+  ctx_map.arc(
+    hoveredPlanet.x * 600 * scaleX,
+    hoveredPlanet.y * 400 * scaleY,
+    radius * 1.2,
+    0,
+    Math.PI * 2
+  );
+  ctx_map.fillStyle = `rgba(255, 255, 255, 0.3)`;
+  ctx_map.fill();
+  ctx_map.restore();
+}

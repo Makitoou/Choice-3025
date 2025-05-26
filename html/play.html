@@ -19,6 +19,10 @@
     <title>Выбор-3025</title>
   </head>
   <body class="user-select-none font-monospace">
+    <div class="canvas-container">
+      <canvas id="gameCanvas"></canvas>
+      <a href="play.html" class="close-btn neon-title">&times;</a>
+    </div>
     <canvas
       id="spaceCanvas"
       class="position-fixed top-0 start-0 w-100 h-100 z-0"
@@ -52,7 +56,9 @@
             <h5 class="text-purple neon-title">Навигация</h5>
             <ul class="list-unstyled mt-4 w-100">
               <li class="mb-3">
-                <button class="btn btn-outline-purple w-100">Карта</button>
+                <button id="mapButton" class="btn btn-outline-purple w-100">
+                  Карта
+                </button>
               </li>
               <li class="mb-3">
                 <button class="btn btn-outline-purple w-100">Инвентарь</button>
