@@ -1,12 +1,7 @@
 .btn-outline-purple {
-  color: #8a2be2;
-  border-color: #8a2be2;
-}
-
-.btn-outline-purple:hover,
-.btn-outline-purple.active {
   background-color: #8a2be2;
   color: white;
+  border-color: #8a2be2;
 }
 
 .form-range::-webkit-slider-thumb {
@@ -136,13 +131,15 @@ body {
 }
 
 .btn-outline-purple:hover {
+  background-color: #8a2be2;
+  color: white;
   transform: translateY(-2px);
 }
-.bi-door-closed{
+.bi-door-closed {
   width: 100px;
   height: 100px;
 }
-svg{
+svg {
   padding-left: 0;
   margin-left: 0;
   padding-bottom: 10px;
