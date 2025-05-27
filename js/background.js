@@ -525,7 +525,7 @@ function animatePlanetSize(planet, newSize, duration) {
 }
 function animateSurfaceSize(newSize, duration) {
   const startHeight = surfaceHeightValue;
-  const targetHeight = 0.3;
+  const targetHeight = 0.4;
   const startTime = Date.now();
   const animation = () => {
     const currentTime = Date.now();
