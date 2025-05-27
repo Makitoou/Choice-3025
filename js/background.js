@@ -52,7 +52,7 @@ function typewriterEffect(
             document.getElementById("exploreButton").disabled = false;
           }, 1500);
         }
-      }, 1000);
+      }, 500);
     } else {
       toggleButtons(false);
     }
