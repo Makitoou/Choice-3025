@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
       document.body.appendChild(overlay);
       setTimeout(() => {
-        window.open("../html/play.html", "_self");
+        window.open("./html/play.html", "_self");
       }, 500);
     };
     skipBtn.addEventListener("click", skipHandler);
@@ -221,11 +221,11 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("introShown", "true");
       overlay.onclick = () => {
         overlay.remove();
-        window.open("../html/play.html", "_self");
+        window.open("./html/play.html", "_self");
       };
     } catch (error) {
       console.error("Ошибка:", error);
-      window.open("../html/play.html", "_self");
+      window.open("./html/play.html", "_self");
     }
   });
 });
