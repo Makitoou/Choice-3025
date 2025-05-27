@@ -33,7 +33,9 @@ function typewriterEffect(element, text, speed = 50, isFinal = false) {
         setTimeout(() => {
           dialogContainer.style.display = "none";
           alienContainer.style.display = "none";
-          toggleButtons(false);
+          document.getElementById("talkButton").disabled = true;
+          document.getElementById("leaveButton").disabled = true;
+          document.getElementById("exploreButton").disabled = false;
         }, 1500);
       }, 2000);
     } else {
