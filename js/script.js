@@ -225,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     } catch (error) {
       console.error("Ошибка:", error);
-      window.open("..ви/html/play.html", "_self");
+      window.open("../html/play.html", "_self");
     }
   });
 });
