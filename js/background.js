@@ -1,3 +1,4 @@
+let surfaceHeightValue = 0.2;
 document.addEventListener("DOMContentLoaded", async () => {
   const response = await fetch("../json/prehistory.json");
   const data = await response.json();
@@ -79,10 +80,7 @@ function generateSurfaceNoise() {
     x <= canvas.width + segmentWidth;
     x += segmentWidth
   ) {
-    const noise =
-      Math.sin(x * 0.02) * 15 +
-      Math.cos(x * 0.015 * 2) * 10 +
-      Math.random() * 4;
+    const noise = 0;
     surfaceNoise.push({ x, y: noise });
   }
 }
@@ -195,7 +193,7 @@ function draw() {
   });
 
   generateSurfaceNoise();
-  const surfaceHeight = canvas.height * 0.2;
+  const surfaceHeight = canvas.height * surfaceHeightValue;
   const baseY = canvas.height - surfaceHeight;
 
   ctx.beginPath();
@@ -477,18 +475,6 @@ document.getElementById("talkButton").addEventListener("click", () => {
 });
 dialogContainer.classList.add("dialog-hidden");
 
-//Выключение ответов, при клике где-либо, кроме ответов
-document.addEventListener("click", (e) => {
-  const dialogOptions = document.getElementById("dialogOptions");
-  const dialogContainer = document.getElementById("dialogContainer");
-
-  if (!dialogOptions.contains(e.target)) {
-    dialogOptions.style.display = "none";
-    dialogContainer.classList.add("dialog-visible");
-  } else {
-    dialogContainer.classList.add("dialog-visible");
-  }
-});
 document.querySelectorAll("#dialogOptions button").forEach((button) => {
   button.addEventListener("click", () => {
     toggleButtons(true);
@@ -509,4 +495,70 @@ function toggleButtons(state) {
     const btn = document.getElementById(id);
     if (btn) btn.disabled = state;
   });
+}
+let isExploreButtonClicked = false;
+document.getElementById("exploreButton").addEventListener("click", () => {
+  if (!isExploreButtonClicked) {
+    planets.forEach((planet) => {
+      animatePlanetSize(planet, planet.radius * 0.5, 1000);
+    });
+    animateSurfaceSize(0.5, 2000);
+    isExploreButtonClicked = true;
+    document.getElementById("exploreButton").disabled = true;
+  }
+});
+function animatePlanetSize(planet, newSize, duration) {
+  const startSize = planet.radius;
+  const startTime = Date.now();
+  const animation = () => {
+    const currentTime = Date.now();
+    const progress = (currentTime - startTime) / duration;
+    planet.radius = startSize + (newSize - startSize) * progress;
+    if (progress < 1) {
+      requestAnimationFrame(animation);
+    }
+  };
+  animation();
+  document.getElementById("exploreButton").style.display = "none";
+  document.getElementById("talkButton").style.display = "none";
+  document.getElementById("leaveButton").style.display = "none";
+}
+function animateSurfaceSize(newSize, duration) {
+  const startHeight = surfaceHeightValue;
+  const targetHeight = 0.3;
+  const startTime = Date.now();
+  const animation = () => {
+    const currentTime = Date.now();
+    const progress = Math.min((currentTime - startTime) / duration, 1);
+    const newHeight = startHeight + (newSize - startHeight) * progress;
+    surfaceNoise.forEach((point) => {
+      point.y = 0;
+    });
+    surfaceHeightValue = startHeight + (targetHeight - startHeight) * progress;
+    const surfaceHeight = canvas.height - newHeight;
+    ctx.beginPath();
+    ctx.moveTo(-50, canvas.height);
+    ctx.lineTo(-50, surfaceHeight + 50);
+    surfaceNoise.forEach((point, i) => {
+      const cy = surfaceHeight + point.y;
+      if (i === 0) {
+        ctx.lineTo(point.x, cy);
+      } else {
+        const prev = surfaceNoise[i - 1];
+        const cpx = (prev.x + point.x) / 2;
+        const cpy = (prev.y + point.y) / 2;
+        ctx.quadraticCurveTo(prev.x, prev.y + surfaceHeight, point.x, cy);
+      }
+    });
+    ctx.lineTo(canvas.width + 50, canvas.height);
+    ctx.closePath();
+    ctx.fillStyle = `#3A332D`;
+    ctx.fill();
+    if (progress < 1) {
+      requestAnimationFrame(animation);
+    } else {
+      surfaceHeightValue = targetHeight;
+    }
+  };
+  animation();
 }
