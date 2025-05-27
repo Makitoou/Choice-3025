@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(overlay);
 
     try {
-      const response = await fetch("json/prehistory.json");
+      const response = await fetch("../json/prehistory.json");
       data = await response.json();
       textContainer.style.visibility = "visible";
 
@@ -221,11 +221,11 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("introShown", "true");
       overlay.onclick = () => {
         overlay.remove();
-        window.open("/html/play.html", "_self");
+        window.open("../html/play.html", "_self");
       };
     } catch (error) {
       console.error("Ошибка:", error);
-      window.open("/html/play.html", "_self");
+      window.open("..ви/html/play.html", "_self");
     }
   });
 });
