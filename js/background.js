@@ -1,3 +1,48 @@
+document.addEventListener("DOMContentLoaded", async () => {
+  const response = await fetch("../json/prehistory.json");
+  const data = await response.json();
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  const dialogContainer = document.getElementById("dialogContainer");
+  const dialogText = document.getElementById("dialogText");
+
+  dialogContainer.classList.add("dialog-visible");
+  typewriterEffect(dialogText, data.dialog, 50);
+});
+
+function typewriterEffect(element, text, speed = 50, isFinal = false) {
+  let i = 0;
+  element.innerHTML = "";
+  toggleButtons(true);
+
+  function type() {
+    if (i < text.length) {
+      element.innerHTML += text.charAt(i) === "\n" ? "<br>" : text.charAt(i);
+      element.parentElement.scrollTop = element.parentElement.scrollHeight;
+      i++;
+      setTimeout(type, speed);
+    } else if (isFinal) {
+      setTimeout(() => {
+        const dialogContainer = document.getElementById("dialogContainer");
+        const alienContainer = document.getElementById("alienContainer");
+
+        dialogContainer.classList.add("hidden");
+        alienContainer.classList.add("exit");
+
+        setTimeout(() => {
+          dialogContainer.style.display = "none";
+          alienContainer.style.display = "none";
+          toggleButtons(false);
+        }, 1500);
+      }, 2000);
+    } else {
+      toggleButtons(false);
+    }
+  }
+  type();
+}
+
 const canvas = document.getElementById("spaceCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -362,4 +407,89 @@ function drawHoverEffect() {
   ctx_map.fillStyle = `rgba(255, 255, 255, 0.3)`;
   ctx_map.fill();
   ctx_map.restore();
+}
+async function loadPrehistory() {
+  const response = await fetch("../json/prehistory.json");
+  return await response.json();
+}
+
+async function showDialogOptions() {
+  const data = await loadPrehistory();
+  const dialogOptions = document.getElementById("dialogOptions");
+  dialogOptions.innerHTML = `
+  <div class="d-flex justify-content-center gap-3">
+    <button class="btn btn-lg" data-answer="positive">${data["positive-answer"]}</button>
+    <button class="btn btn-lg" data-answer="neutral">${data["neutral-answer"]}</button>
+    <button class="btn btn-lg" data-answer="negative">${data["negative-answer"]}</button>
+  </div>
+`;
+  dialogOptions.style.display = "block";
+
+  document.querySelectorAll("#dialogOptions button").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const answerType = button.getAttribute("data-answer");
+      const dialogContainer = document.getElementById("dialogContainer");
+      const dialogText = document.getElementById("dialogText");
+
+      let responseKey;
+      switch (answerType) {
+        case "positive":
+          responseKey = "alien-talk-research";
+          break;
+        case "negative":
+          responseKey = "alien-talk-leave";
+          break;
+        case "neutral":
+          responseKey = "alien-talk-neutral";
+          break;
+      }
+
+      dialogText.innerHTML = "";
+      typewriterEffect(dialogText, data[responseKey], 50, true);
+
+      const dialogOptions = document.getElementById("dialogOptions");
+      dialogOptions.style.display = "none";
+    });
+  });
+}
+
+// Обработчик кнопки "Поговорить"
+document.getElementById("talkButton").addEventListener("click", () => {
+  toggleButtons(true);
+  showDialogOptions();
+});
+dialogContainer.classList.add("dialog-hidden");
+
+//Выключение ответов, при клике где-либо, кроме ответов
+document.addEventListener("click", (e) => {
+  const dialogOptions = document.getElementById("dialogOptions");
+  const dialogContainer = document.getElementById("dialogContainer");
+
+  if (!dialogOptions.contains(e.target)) {
+    dialogOptions.style.display = "none";
+    dialogContainer.classList.add("dialog-visible");
+  } else {
+    dialogContainer.classList.add("dialog-visible");
+  }
+});
+document.querySelectorAll("#dialogOptions button").forEach((button) => {
+  button.addEventListener("click", () => {
+    toggleButtons(true);
+    dialogContainer.classList.remove("dialog-visible");
+    const dialogOptions = document.getElementById("dialogOptions");
+    const answer = button.getAttribute("data-answer");
+    console.log(`Выбран ответ: ${answer} - ${button.textContent}`);
+    dialogOptions.style.display = "none";
+
+    const dialogContainer = document.getElementById("dialogContainer");
+    dialogContainer.classList.remove(".dialog-visible");
+  });
+});
+// Функция для блокировки/разблокировки кнопок
+function toggleButtons(state) {
+  const buttons = ["exploreButton", "talkButton", "leaveButton"];
+  buttons.forEach((id) => {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = state;
+  });
 }

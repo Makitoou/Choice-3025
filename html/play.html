@@ -27,6 +27,9 @@
       id="spaceCanvas"
       class="position-fixed top-0 start-0 w-100 h-100 z-0"
     ></canvas>
+    <div class="alien-container" id="alienContainer">
+      <img src="../images/alien.png" alt="Пришелец" class="img-fluid" />
+    </div>
     <div
       class="container-fluid position-relative z-1 h-100 px-0"
       style="margin: 0"
@@ -71,17 +74,12 @@
         </div>
         <div class="col d-flex flex-column px-0" style="min-width: 300px">
           <div class="flex-grow-1 d-flex flex-column justify-content-end mb-4">
-            <span
-              class="neon-title-dialog text-center mx-auto"
-              style="
-                font-size: 1.8rem;
-                background-color: #d9d9d9a4;
-                padding: 1rem;
-                width: 80%;
-              "
-              >Привет! Рады приветствовать на планете Сникерс.<br />Чем хочешь
-              заняться?</span
-            >
+            <div id="dialogContainer" class="dialog-box">
+              <div
+                id="dialogText"
+                class="neon-title-dialog text-center mx-auto"
+              ></div>
+            </div>
           </div>
           <div
             class="container-fluid py-4 border-purple"
@@ -89,21 +87,31 @@
           >
             <div class="row gx-2 justify-content-between mx-0">
               <div class="col px-1">
-                <button class="btn btn-outline-purple w-100 py-3">
+                <button
+                  class="btn btn-outline-purple w-100 py-3"
+                  id="exploreButton"
+                >
                   Исследовать
                 </button>
               </div>
               <div class="col px-1">
-                <button class="btn btn-outline-purple w-100 py-3">
+                <button
+                  class="btn btn-outline-purple w-100 py-3"
+                  id="talkButton"
+                >
                   Поговорить
                 </button>
               </div>
               <div class="col px-1">
-                <button class="btn btn-outline-purple w-100 py-3">
+                <button
+                  class="btn btn-outline-purple w-100 py-3"
+                  id="leaveButton"
+                >
                   Улететь
                 </button>
               </div>
             </div>
+            <div id="dialogOptions"></div>
           </div>
         </div>
         <div
