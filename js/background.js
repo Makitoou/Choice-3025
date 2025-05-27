@@ -8,10 +8,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   const dialogText = document.getElementById("dialogText");
 
   dialogContainer.classList.add("dialog-visible");
-  typewriterEffect(dialogText, data.dialog, 50);
+  typewriterEffect(dialogText, data.dialog, 50, false, true);
 });
 
-function typewriterEffect(element, text, speed = 50, isFinal = false) {
+function typewriterEffect(
+  element,
+  text,
+  speed = 50,
+  isFinal = false,
+  isGreeting = false
+) {
   let i = 0;
   element.innerHTML = "";
   toggleButtons(true);
@@ -22,22 +28,31 @@ function typewriterEffect(element, text, speed = 50, isFinal = false) {
       element.parentElement.scrollTop = element.parentElement.scrollHeight;
       i++;
       setTimeout(type, speed);
-    } else if (isFinal) {
+    } else if (isFinal || isGreeting) {
+      // Добавлен флаг isGreeting
       setTimeout(() => {
         const dialogContainer = document.getElementById("dialogContainer");
         const alienContainer = document.getElementById("alienContainer");
 
-        dialogContainer.classList.add("hidden");
-        alienContainer.classList.add("exit");
-
-        setTimeout(() => {
-          dialogContainer.style.display = "none";
-          alienContainer.style.display = "none";
-          document.getElementById("talkButton").disabled = true;
+        if (isGreeting) {
+          // Блокируем Исследовать и Улететь после приветствия
+          document.getElementById("exploreButton").disabled = true;
           document.getElementById("leaveButton").disabled = true;
-          document.getElementById("exploreButton").disabled = false;
-        }, 1500);
-      }, 2000);
+          document.getElementById("talkButton").disabled = false;
+        } else {
+          // Стандартная логика для финальных ответов
+          dialogContainer.classList.add("hidden");
+          alienContainer.classList.add("exit");
+
+          setTimeout(() => {
+            dialogContainer.style.display = "none";
+            alienContainer.style.display = "none";
+            document.getElementById("talkButton").disabled = true;
+            document.getElementById("leaveButton").disabled = true;
+            document.getElementById("exploreButton").disabled = false;
+          }, 1500);
+        }
+      }, 1000);
     } else {
       toggleButtons(false);
     }
