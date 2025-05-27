@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(overlay);
 
     try {
-      const response = await fetch("../json/prehistory.json");
+      const response = await fetch("./json/prehistory.json");
       data = await response.json();
       textContainer.style.visibility = "visible";
 
