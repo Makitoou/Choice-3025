@@ -1,15 +1,94 @@
 let surfaceHeightValue = 0.2;
+let enterImage = null;
+let imagesOnSurface = [];
+let selectedAnswerType = null;
+const urlParams = new URLSearchParams(window.location.search);
+const state = urlParams.get("state");
 document.addEventListener("DOMContentLoaded", async () => {
-  const response = await fetch("../json/prehistory.json");
-  const data = await response.json();
+  if (state === "surface_zoomed") {
+    surfaceHeightValue = 0.4;
+    const alienContainer = document.getElementById("alienContainer");
+    alienContainer.style.display = "none";
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+    document.getElementById("exploreButton").style.display = "none";
+    document.getElementById("talkButton").style.display = "none";
+    document.getElementById("leaveButton").style.display = "none";
 
-  const dialogContainer = document.getElementById("dialogContainer");
-  const dialogText = document.getElementById("dialogText");
+    // Создаем кнопку возврата
+    const returnButton = document.createElement("button");
+    returnButton.id = "returnToShipButton";
+    returnButton.textContent = "Вернуться к кораблю";
+    returnButton.className = "btn btn-outline-purple";
+    returnButton.style.position = "fixed";
+    returnButton.style.bottom = "20px";
+    returnButton.style.left = "50%";
+    returnButton.style.transform = "translateX(-50%)";
+    returnButton.style.zIndex = "1000";
+    document.body.appendChild(returnButton);
 
-  dialogContainer.classList.add("dialog-visible");
-  typewriterEffect(dialogText, data.dialog, 50, false, true);
+    // Создаем изображение входа
+    createEnterImage();
+
+    // Обработчик для кнопки возврата
+    returnButton.addEventListener("click", async () => {
+      // Удаляем изображение входа
+      if (enterImage) {
+        enterImage.style.opacity = "0";
+        setTimeout(() => {
+          if (enterImage && enterImage.parentNode) {
+            enterImage.parentNode.removeChild(enterImage);
+          }
+          enterImage = null;
+          showAlienResponseAfterReturn();
+        }, 500);
+      }
+
+      // Анимация затемнения
+      document.body.style.transition = "filter 1s ease";
+      document.body.style.filter = "brightness(0)";
+
+      // Анимация возврата к кораблю
+      await animateReturnToShip();
+
+      // Показываем пришельца и кнопки
+      setTimeout(() => {
+        document.getElementById("alienContainer").style.display = "block";
+        document.getElementById("exploreButton").style.display = "block";
+        document.getElementById("talkButton").style.display = "block";
+        document.getElementById("leaveButton").style.display = "block";
+        document.getElementById("exploreButton").disabled = true;
+        document.getElementById("leaveButton").disabled = true;
+        document.getElementById("talkButton").disabled = false;
+        document.getElementById("mapButton").disabled = false;
+
+        // Удаляем кнопку возврата
+        returnButton.remove();
+
+        // Убираем параметр состояния из URL
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
+
+        // Возвращаем яркость
+        document.body.style.filter = "brightness(1)";
+        document.getElementById("mapButton").disabled = false;
+      }, 1000);
+    });
+  } else {
+    const response = await fetch("../json/prehistory.json");
+    const data = await response.json();
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const dialogContainer = document.getElementById("dialogContainer");
+    const dialogText = document.getElementById("dialogText");
+
+    dialogContainer.classList.add("dialog-visible");
+    typewriterEffect(dialogText, data.dialog, 50, false, true);
+  }
+  dialogContainer.classList.add("dialog-hidden");
 });
 
 function typewriterEffect(
@@ -17,7 +96,8 @@ function typewriterEffect(
   text,
   speed = 50,
   isFinal = false,
-  isGreeting = false
+  isGreeting = false,
+  callback = null
 ) {
   let i = 0;
   element.innerHTML = "";
@@ -48,11 +128,15 @@ function typewriterEffect(
             document.getElementById("talkButton").disabled = true;
             document.getElementById("leaveButton").disabled = true;
             document.getElementById("exploreButton").disabled = false;
-          }, 1500);
+            document.getElementById("mapButton").disabled = false;
+          }, 1000);
         }
-      }, 500);
+
+        if (callback) callback();
+      }, 1000);
     } else {
       toggleButtons(false);
+      if (callback) callback();
     }
   }
   type();
@@ -232,174 +316,10 @@ function draw() {
   ctx.lineWidth = 3;
   ctx.stroke();
 }
-function animate(timestamp) {
-  if (!lastTime) lastTime = timestamp;
-  const deltaTime = (timestamp - lastTime) * 0.1;
-  lastTime = timestamp;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  updatePositions(deltaTime);
-  draw();
-  requestAnimationFrame(animate);
-}
 
 animate(0);
 
-//Карта
-
-const canvas_map = document.getElementById("gameCanvas");
-const ctx_map = canvas_map.getContext("2d");
-
-document.getElementById("mapButton").addEventListener("click", () => {
-  document.body.classList.add("map-visible");
-  resizeCanvas();
-  canvas_map.width = mapWidth;
-  canvas_map.height = mapHeight;
-  draw_map();
-});
-
-document.querySelector(".close-btn").addEventListener("click", () => {
-  document.body.classList.remove("d-block");
-});
-
-// Размеры карты
-const mapWidth = 600;
-const mapHeight = 400;
-const cornerRadius = 0;
-
-// Цвета
-const colors = {
-  background: "#483d8b",
-  planets_color: ["#0000FF", "#808000", "#00FFFF", "#211E1B"],
-};
-
-// Позиции планет
-const planets_map = [
-  { x: 0.1, y: 0.2 }, // top-left
-  { x: 0.5, y: 0.2 }, // top-right
-  { x: 0.8, y: 0.4 }, // bottom-right
-  { x: 0.2, y: 0.8 }, // bottom-left
-];
-
-function drawRoundedRect(x, y, width, height, radius) {
-  ctx_map.beginPath();
-  ctx_map.moveTo(x + radius, y);
-  ctx_map.arcTo(x + width, y, x + width, y + height, radius);
-  ctx_map.arcTo(x + width, y + height, x, y + height, radius);
-  ctx_map.arcTo(x, y + height, x, y, radius);
-  ctx_map.arcTo(x, y, x + width, y, radius);
-  ctx_map.closePath();
-  ctx_map.fillStyle = "#D9D9D9";
-  ctx_map.fill();
-}
-
-function drawConnections(mapX, mapY) {
-  ctx_map.beginPath();
-  // Горизонтальные линии
-  ctx_map.moveTo(mapX + mapWidth * 0.1, mapY + mapHeight * 0.2);
-  ctx_map.lineTo(mapX + mapWidth * 0.5, mapY + mapHeight * 0.2);
-
-  ctx_map.moveTo(mapX + mapWidth * 0.2, mapY + mapHeight * 0.8);
-  ctx_map.lineTo(mapX + mapWidth * 0.8, mapY + mapHeight * 0.4);
-
-  // Вертикальные линии
-  ctx_map.moveTo(mapX + mapWidth * 0.1, mapY + mapHeight * 0.2);
-  ctx_map.lineTo(mapX + mapWidth * 0.2, mapY + mapHeight * 0.8);
-
-  ctx_map.moveTo(mapX + mapWidth * 0.5, mapY + mapHeight * 0.2);
-  ctx_map.lineTo(mapX + mapWidth * 0.8, mapY + mapHeight * 0.4);
-
-  // Диагонали
-  ctx_map.moveTo(mapX + mapWidth * 0.1, mapY + mapHeight * 0.2);
-  ctx_map.lineTo(mapX + mapWidth * 0.8, mapY + mapHeight * 0.4);
-
-  ctx_map.moveTo(mapX + mapWidth * 0.5, mapY + mapHeight * 0.2);
-  ctx_map.lineTo(mapX + mapWidth * 0.2, mapY + mapHeight * 0.8);
-
-  ctx_map.strokeStyle = "black";
-  ctx_map.lineWidth = 2;
-  ctx_map.stroke();
-}
-const planetRadii = {
-  "#00FFFF": 20,
-  "#808000": 30,
-  "#0000FF": 40,
-  "#211E1B": 50,
-};
-function drawPlanets(mapX, mapY) {
-  planets_map.forEach((pos, i) => {
-    ctx_map.beginPath();
-    const radius = planetRadii[colors.planets_color[i]] || 20;
-    ctx_map.arc(
-      mapX + mapWidth * pos.x,
-      mapY + mapHeight * pos.y,
-      radius,
-      0,
-      Math.PI * 2
-    );
-    ctx_map.fillStyle = colors.planets_color[i];
-    ctx_map.fill();
-  });
-}
-
-function draw_map() {
-  ctx_map.fillStyle = colors.background;
-  ctx_map.fillRect(0, 0, canvas_map.width, canvas_map.height);
-
-  const scaleX = canvas_map.width / 600;
-  const scaleY = canvas_map.height / 400;
-
-  ctx_map.save();
-  ctx_map.scale(scaleX, scaleY);
-  drawRoundedRect(0, 0, 600, 400, 50);
-  drawConnections(0, 0);
-  drawPlanets(0, 0);
-  ctx_map.restore();
-}
-
-window.addEventListener("resize", () => {
-  draw_map();
-});
-
-draw_map();
 let hoveredPlanet = null;
-
-function getPlanetPositions() {
-  const rect = canvas_map.getBoundingClientRect();
-  const scaleX = canvas_map.width / 600;
-  const scaleY = canvas_map.height / 400;
-
-  return planets_map.map((pos, i) => ({
-    x: pos.x * 600 * scaleX,
-    y: pos.y * 400 * scaleY,
-    radius: planetRadii[colors.planets_color[i]] * Math.min(scaleX, scaleY),
-    color: colors.planets_color[i],
-  }));
-}
-
-canvas_map.addEventListener("mousemove", (e) => {
-  const rect = canvas_map.getBoundingClientRect();
-  const scaleX = canvas_map.width / 600;
-  const scaleY = canvas_map.height / 400;
-
-  const mouseX = (e.clientX - rect.left) / scaleX;
-  const mouseY = (e.clientY - rect.top) / scaleY;
-
-  hoveredPlanet = planets_map.find((pos, i) => {
-    const planetX = pos.x * 600;
-    const planetY = pos.y * 400;
-    const radius = planetRadii[colors.planets_color[i]];
-    return Math.hypot(mouseX - planetX, mouseY - planetY) < radius;
-  });
-
-  draw_map();
-  if (hoveredPlanet) drawHoverEffect();
-});
-
-canvas_map.addEventListener("mouseout", () => {
-  hoveredPlanet = null;
-  draw_map();
-});
 
 function drawHoverEffect() {
   if (!hoveredPlanet) return;
@@ -443,6 +363,7 @@ async function showDialogOptions() {
       const answerType = button.getAttribute("data-answer");
       const dialogContainer = document.getElementById("dialogContainer");
       const dialogText = document.getElementById("dialogText");
+      selectedAnswerType = answerType;
 
       let responseKey;
       switch (answerType) {
@@ -462,6 +383,7 @@ async function showDialogOptions() {
 
       const dialogOptions = document.getElementById("dialogOptions");
       dialogOptions.style.display = "none";
+      document.getElementById("mapButton").disabled = false;
     });
   });
 }
@@ -469,9 +391,9 @@ async function showDialogOptions() {
 // Обработчик кнопки "Поговорить"
 document.getElementById("talkButton").addEventListener("click", () => {
   toggleButtons(true);
+  document.getElementById("mapButton").disabled = true;
   showDialogOptions();
 });
-dialogContainer.classList.add("dialog-hidden");
 
 document.querySelectorAll("#dialogOptions button").forEach((button) => {
   button.addEventListener("click", () => {
@@ -488,7 +410,7 @@ document.querySelectorAll("#dialogOptions button").forEach((button) => {
 });
 // Функция для блокировки/разблокировки кнопок
 function toggleButtons(state) {
-  const buttons = ["exploreButton", "talkButton", "leaveButton"];
+  const buttons = ["exploreButton", "talkButton", "leaveButton", "mapButton"];
   buttons.forEach((id) => {
     const btn = document.getElementById(id);
     if (btn) btn.disabled = state;
@@ -577,32 +499,37 @@ window.addEventListener("resize", () => {
   });
 });
 function createEnterImage() {
-  const imageElem = document.createElement("img");
-  imageElem.src = "../images/enter.png";
-  imageElem.className = "surface-image";
-  imageElem.style.position = "fixed";
-  imageElem.style.left = "400px";
-  imageElem.style.bottom = "150px";
-  imageElem.style.width = "400px";
-  imageElem.style.height = "300px";
-  imageElem.style.opacity = "0";
-  imageElem.style.cursor = "pointer";
-  imageElem.style.transition = "filter 0.5s ease";
-  document.body.appendChild(imageElem);
+  // Если изображение уже существует, удаляем его
+  if (enterImage) {
+    enterImage.remove();
+  }
 
-  imageElem.onload = () => {
-    imageElem.style.opacity = "1";
+  enterImage = document.createElement("img");
+  enterImage.src = "../images/enter.png";
+  enterImage.className = "surface-image";
+  enterImage.style.position = "fixed";
+  enterImage.style.left = "400px";
+  enterImage.style.bottom = "150px";
+  enterImage.style.width = "400px";
+  enterImage.style.height = "300px";
+  enterImage.style.opacity = "0";
+  enterImage.style.cursor = "pointer";
+  enterImage.style.transition = "filter 0.5s ease";
+  document.body.appendChild(enterImage);
+
+  enterImage.onload = () => {
+    enterImage.style.opacity = "1";
   };
 
-  imageElem.addEventListener("mouseover", () => {
-    imageElem.style.filter = "brightness(1.2)";
+  enterImage.addEventListener("mouseover", () => {
+    enterImage.style.filter = "brightness(1.2)";
   });
 
-  imageElem.addEventListener("mouseout", () => {
-    imageElem.style.filter = "";
+  enterImage.addEventListener("mouseout", () => {
+    enterImage.style.filter = "";
   });
 
-  imageElem.addEventListener("click", function () {
+  enterImage.addEventListener("click", function () {
     document.body.style.transition = "filter 1s ease";
     document.body.style.filter = "brightness(0)";
 
@@ -610,11 +537,181 @@ function createEnterImage() {
       window.location.href = "cave.html";
     }, 1000);
   });
+
+  return enterImage;
 }
-document.getElementById("enter-image").addEventListener("click", function () {
-  document.body.style.filter = "brightness(0)";
-  window.location.href = "cave.html";
-});
 document.addEventListener("DOMContentLoaded", function () {
   document.body.classList.add("loaded");
 });
+function drawSurface(surfaceHeightParam) {
+  ctx.beginPath();
+  ctx.moveTo(-50, canvas.height);
+  ctx.lineTo(-50, surfaceHeightParam + 50);
+
+  generateSurfaceNoise();
+  const baseY = canvas.height - surfaceHeightParam;
+
+  surfaceNoise.forEach((point, i) => {
+    const cy = baseY + point.y;
+    if (i === 0) {
+      ctx.lineTo(point.x, cy);
+    } else {
+      const prev = surfaceNoise[i - 1];
+      ctx.quadraticCurveTo(prev.x, prev.y + baseY, point.x, cy);
+    }
+  });
+
+  ctx.lineTo(canvas.width + 50, canvas.height);
+  ctx.closePath();
+
+  const surfaceGradient = ctx.createLinearGradient(0, baseY, 0, canvas.height);
+  surfaceGradient.addColorStop(0, "#211a1a");
+  surfaceGradient.addColorStop(0.5, "#332619");
+  surfaceGradient.addColorStop(1, "#47301a");
+  ctx.fillStyle = surfaceGradient;
+  ctx.fill();
+
+  ctx.beginPath();
+  surfaceNoise.forEach((point, i) => {
+    const cy = baseY + point.y;
+    if (i === 0) {
+      ctx.moveTo(point.x, cy);
+    } else {
+      ctx.lineTo(point.x, cy);
+    }
+  });
+  ctx.strokeStyle = "#211E1B";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+function animate(timestamp) {
+  if (!lastTime) lastTime = timestamp;
+  const deltaTime = (timestamp - lastTime) * 0.1;
+  lastTime = timestamp;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  updatePositions(deltaTime);
+  draw();
+
+  if (state === "surface_zoomed") {
+    const surfaceHeightVal = canvas.height * surfaceHeightValue;
+    drawSurface(surfaceHeightVal);
+  }
+  requestAnimationFrame(animate);
+}
+function animateReturnToShip() {
+  return new Promise((resolve) => {
+    const startHeight = surfaceHeightValue;
+    const targetHeight = 0.2;
+    const duration = 2000;
+    const startTime = Date.now();
+
+    const animation = () => {
+      const currentTime = Date.now();
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+
+      surfaceHeightValue =
+        startHeight + (targetHeight - startHeight) * progress;
+
+      if (progress < 1) {
+        requestAnimationFrame(animation);
+      } else {
+        surfaceHeightValue = targetHeight;
+        resolve();
+      }
+    };
+
+    animation();
+  });
+}
+//Карта
+let mapVisible = false;
+const mapContainer = document.getElementById("mapContainer");
+const mapImage = document.getElementById("mapImage");
+const mapButton = document.getElementById("mapButton");
+const closeMapButton = document.getElementById("closeMapButton");
+
+function toggleMap() {
+  const isDialogActive = document
+    .getElementById("dialogContainer")
+    .classList.contains("dialog-visible");
+  if (isDialogActive) return;
+  mapVisible = !mapVisible;
+
+  if (mapVisible) {
+    mapContainer.classList.add("visible");
+    toggleButtons(true);
+  } else {
+    mapContainer.classList.remove("visible");
+    setTimeout(() => toggleButtons(false), 500);
+  }
+}
+
+mapButton.addEventListener("click", toggleMap);
+closeMapButton.addEventListener("click", toggleMap);
+mapContainer.querySelector(".map-overlay").addEventListener("click", toggleMap);
+async function showAlienResponseAfterReturn() {
+  const data = await loadPrehistory();
+  const dialogContainer = document.getElementById("dialogContainer");
+  const dialogText = document.getElementById("dialogText");
+
+  let responseKey;
+  switch (selectedAnswerType) {
+    case "positive":
+      responseKey = "after-research";
+      break;
+    case "negative":
+      responseKey = "after-leave";
+      break;
+    case "neutral":
+      responseKey = "after-neutral";
+      break;
+    default:
+      responseKey = "after-neutral";
+  }
+
+  dialogContainer.style.display = "block";
+  dialogContainer.classList.add("dialog-visible");
+
+  // Блокируем кнопки "Исследовать" и "Улететь"
+  document.getElementById("exploreButton").disabled = true;
+  document.getElementById("leaveButton").disabled = true;
+
+  // Показываем текст и затем кнопки выбора планет
+  typewriterEffect(dialogText, data[responseKey], 50, false, false, () => {
+    showPlanetChoices();
+  });
+}
+async function showPlanetChoices() {
+  const data = await loadPrehistory();
+  const dialogOptions = document.getElementById("dialogOptions");
+  const choices = data["planet-choices"];
+
+  dialogOptions.innerHTML = `
+    <div class="d-flex justify-content-center gap-3">
+      <button class="btn btn-lg" data-planet="nebula">${choices["nebula"]}</button>
+      <button class="btn btn-lg" data-planet="station">${choices["station"]}</button>
+      <button class="btn btn-lg" data-planet="mirror">${choices["mirror"]}</button>
+    </div>
+  `;
+  dialogOptions.style.display = "block";
+
+  document.querySelectorAll("#dialogOptions button").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const planetType = button.getAttribute("data-planet");
+      const dialogContainer = document.getElementById("dialogContainer");
+      const dialogText = document.getElementById("dialogText");
+
+      // Получаем ключ для ответа пришельца
+      const responseKey = `${planetType}-alien-talk`;
+
+      dialogText.innerHTML = "";
+      typewriterEffect(dialogText, data[responseKey], 50, true);
+      dialogOptions.style.display = "none";
+
+      // Блокируем кнопки после выбора
+      document.getElementById("exploreButton").disabled = true;
+      document.getElementById("leaveButton").disabled = true;
+    });
+  });
+}

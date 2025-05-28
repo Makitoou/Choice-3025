@@ -19,14 +19,20 @@
     <title>Выбор-3025</title>
   </head>
   <body class="user-select-none font-monospace">
-    <div class="canvas-container">
-      <canvas id="gameCanvas"></canvas>
-      <a href="play.html" class="close-btn neon-title">&times;</a>
-    </div>
     <canvas
       id="spaceCanvas"
       class="position-fixed top-0 start-0 w-100 h-100 z-0"
     ></canvas>
+    <div id="mapContainer" class="map-container">
+      <div class="map-overlay"></div>
+      <img
+        src="../images/map.png"
+        alt="Карта"
+        id="mapImage"
+        class="map-image"
+      />
+      <button id="closeMapButton" class="close-map-btn">✕</button>
+    </div>
     <div class="alien-container" id="alienContainer">
       <img src="../images/alien.png" alt="Пришелец" class="img-fluid" />
     </div>
@@ -59,7 +65,7 @@
             <h5 class="text-purple neon-title">Навигация</h5>
             <ul class="list-unstyled mt-4 w-100">
               <li class="mb-3">
-                <button id="mapButton" class="btn btn-outline-purple w-100">
+                <button id="mapButton" class="btn btn-outline-purple w-100" disabled>
                   Карта
                 </button>
               </li>

@@ -46,3 +46,12 @@ function createSurfaceImages() {
     imagesOnSurface.push(imageElem);
   });
 }
+function returnToPlanetSurface() {
+  document.body.style.transition = "filter 1s ease";
+  document.body.style.filter = "brightness(0)";
+
+  setTimeout(() => {
+    window.location.href = "play.html?state=surface_zoomed";
+  }, 1000);
+}
+window.returnToPlanetSurface = returnToPlanetSurface;
