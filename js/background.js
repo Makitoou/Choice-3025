@@ -30,18 +30,15 @@ function typewriterEffect(
       i++;
       setTimeout(type, speed);
     } else if (isFinal || isGreeting) {
-      // Добавлен флаг isGreeting
       setTimeout(() => {
         const dialogContainer = document.getElementById("dialogContainer");
         const alienContainer = document.getElementById("alienContainer");
 
         if (isGreeting) {
-          // Блокируем Исследовать и Улететь после приветствия
           document.getElementById("exploreButton").disabled = true;
           document.getElementById("leaveButton").disabled = true;
           document.getElementById("talkButton").disabled = false;
         } else {
-          // Стандартная логика для финальных ответов
           dialogContainer.classList.add("hidden");
           alienContainer.classList.add("exit");
 
@@ -216,8 +213,9 @@ function draw() {
   ctx.closePath();
 
   const surfaceGradient = ctx.createLinearGradient(0, baseY, 0, canvas.height);
-  surfaceGradient.addColorStop(0, "#3A332D");
-  surfaceGradient.addColorStop(1, "#2E2A24");
+  surfaceGradient.addColorStop(0, "#211a1a");
+  surfaceGradient.addColorStop(0.5, "#332619");
+  surfaceGradient.addColorStop(1, "#47301a");
   ctx.fillStyle = surfaceGradient;
   ctx.fill();
 
@@ -558,7 +556,65 @@ function animateSurfaceSize(newSize, duration) {
       requestAnimationFrame(animation);
     } else {
       surfaceHeightValue = targetHeight;
+      areImagesVisible = false;
+      if (!areImagesVisible) {
+        createEnterImage();
+        // createSurfaceImages();
+        areImagesVisible = true;
+      }
     }
   };
   animation();
 }
+window.addEventListener("resize", () => {
+  const surfaceY = canvas.height - canvas.height * surfaceHeightValue;
+
+  imagesOnSurface.forEach((img, index) => {
+    const originalY = imagesData[index].y;
+    img.style.bottom = `${surfaceY - originalY}px`;
+
+    img.style.left = `${imagesData[index].x}px`;
+  });
+});
+function createEnterImage() {
+  const imageElem = document.createElement("img");
+  imageElem.src = "../images/enter.png";
+  imageElem.className = "surface-image";
+  imageElem.style.position = "fixed";
+  imageElem.style.left = "400px";
+  imageElem.style.bottom = "150px";
+  imageElem.style.width = "400px";
+  imageElem.style.height = "300px";
+  imageElem.style.opacity = "0";
+  imageElem.style.cursor = "pointer";
+  imageElem.style.transition = "filter 0.5s ease";
+  document.body.appendChild(imageElem);
+
+  imageElem.onload = () => {
+    imageElem.style.opacity = "1";
+  };
+
+  imageElem.addEventListener("mouseover", () => {
+    imageElem.style.filter = "brightness(1.2)";
+  });
+
+  imageElem.addEventListener("mouseout", () => {
+    imageElem.style.filter = "";
+  });
+
+  imageElem.addEventListener("click", function () {
+    document.body.style.transition = "filter 1s ease";
+    document.body.style.filter = "brightness(0)";
+
+    setTimeout(() => {
+      window.location.href = "cave.html";
+    }, 1000);
+  });
+}
+document.getElementById("enter-image").addEventListener("click", function () {
+  document.body.style.filter = "brightness(0)";
+  window.location.href = "cave.html";
+});
+document.addEventListener("DOMContentLoaded", function () {
+  document.body.classList.add("loaded");
+});

@@ -28,6 +28,9 @@ h1 {
 }
 
 body {
+  overflow: hidden !important;
+  height: 100%;
+  transition: filter 1s ease !important;
   position: relative;
   margin: 0;
   min-height: 100vh;
@@ -103,8 +106,7 @@ body::before {
 .btn-outline-purple {
   transition: all 0.3s ease;
 }
-html,
-body {
+html {
   overflow: hidden !important;
   height: 100%;
 }
@@ -194,6 +196,7 @@ svg {
 .map-visible .close-btn {
   display: block !important;
 }
+
 @keyframes alienEnter {
   from {
     right: -500px;
@@ -216,7 +219,7 @@ svg {
 
 .alien-container img {
   width: 100%;
-  height: 100%;
+  height: 120%;
   object-fit: contain;
 }
 
@@ -306,16 +309,30 @@ svg {
 .dialog-visible {
   transform: translateY(-100px);
 }
-.surface-image {
-  width: 400px !important;
-  height: 300px !important;
-  max-height: 300px;
-  pointer-events: auto;
+.artefact {
   transition: opacity 0.5s ease;
-  position: fixed !important;
-  z-index: 450;
+  z-index: 1000;
+  max-width: 70px;
+  max-height: 70px;
 }
 
-.surface-image:hover {
+.artefact:hover {
   cursor: pointer;
+}
+.col.d-flex.flex-column.px-0::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 15%;
+  background: linear-gradient(#0f0d07 0%, #776032 100%);
+}
+
+#inside {
+  position: relative;
+  width: 100%;
+  height: 70%;
+  object-fit: cover;
+  z-index: 999;
 }
