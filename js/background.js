@@ -216,6 +216,60 @@ function init() {
     },
   ];
 }
+function createPlanetGradient(ctx, planet) {
+  const gradient = ctx.createRadialGradient(
+    planet.x - planet.radius * 0.3, // Начало градиента (смещено для эффекта освещения)
+    planet.y - planet.radius * 0.3,
+    0, // Начальный радиус
+    planet.x,
+    planet.y,
+    planet.radius // Конечный радиус
+  );
+
+  // Осветленный цвет для центра
+  const lightColor = lightenColor(planet.color, 80);
+
+  // Темный цвет для краев
+  const darkColor = darkenColor(planet.color, 40);
+
+  gradient.addColorStop(0, lightColor);
+  gradient.addColorStop(1, darkColor);
+
+  return gradient;
+}
+
+// Вспомогательные функции для изменения яркости цвета
+function lightenColor(hex, percent) {
+  const num = parseInt(hex.slice(1), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = (num >> 16) + amt;
+  const G = ((num >> 8) & 0x00ff) + amt;
+  const B = (num & 0x0000ff) + amt;
+  return `#${(
+    0x1000000 +
+    (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+    (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+    (B < 255 ? (B < 1 ? 0 : B) : 255)
+  )
+    .toString(16)
+    .slice(1)}`;
+}
+
+function darkenColor(hex, percent) {
+  const num = parseInt(hex.slice(1), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = (num >> 16) - amt;
+  const G = ((num >> 8) & 0x00ff) - amt;
+  const B = (num & 0x0000ff) - amt;
+  return `#${(
+    0x1000000 +
+    (R > 0 ? (R < 255 ? R : 255) : 0) * 0x10000 +
+    (G > 0 ? (G < 255 ? G : 255) : 0) * 0x100 +
+    (B > 0 ? (B < 255 ? B : 255) : 0)
+  )
+    .toString(16)
+    .slice(1)}`;
+}
 
 function resizeCanvas() {
   if (!canvas) return;
@@ -257,7 +311,8 @@ function draw() {
       ctx.shadowBlur = 50;
     }
 
-    ctx.fillStyle = planet.color;
+    // Замена сплошного цвета на градиент
+    ctx.fillStyle = createPlanetGradient(ctx, planet);
     ctx.fill();
 
     if (planet.rings) {
