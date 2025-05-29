@@ -2,6 +2,7 @@ let surfaceHeightValue = 0.2;
 let enterImage = null;
 let imagesOnSurface = [];
 let selectedAnswerType = null;
+let isFinalTalkPhase = false;
 const urlParams = new URLSearchParams(window.location.search);
 const state = urlParams.get("state");
 document.addEventListener("DOMContentLoaded", async () => {
@@ -17,7 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Создаем кнопку возврата
     const returnButton = document.createElement("button");
     returnButton.id = "returnToShipButton";
-    returnButton.textContent = "Вернуться к кораблю";
+    returnButton.textContent = "Вернуться к Биби";
     returnButton.className = "btn btn-outline-purple";
     returnButton.style.position = "fixed";
     returnButton.style.bottom = "20px";
@@ -39,7 +40,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             enterImage.parentNode.removeChild(enterImage);
           }
           enterImage = null;
-          showAlienResponseAfterReturn();
         }, 500);
       }
 
@@ -50,31 +50,36 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Анимация возврата к кораблю
       await animateReturnToShip();
 
-      // Показываем пришельца и кнопки
-      setTimeout(() => {
-        document.getElementById("alienContainer").style.display = "block";
-        document.getElementById("exploreButton").style.display = "block";
-        document.getElementById("talkButton").style.display = "block";
-        document.getElementById("leaveButton").style.display = "block";
-        document.getElementById("exploreButton").disabled = true;
-        document.getElementById("leaveButton").disabled = true;
-        document.getElementById("talkButton").disabled = false;
-        document.getElementById("mapButton").disabled = false;
+      // Удаляем кнопку возврата
+      returnButton.remove();
 
-        // Удаляем кнопку возврата
-        returnButton.remove();
+      // Убираем затемнение после завершения всех анимаций
+      document.body.style.filter = "brightness(1)";
 
-        // Убираем параметр состояния из URL
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname
-        );
+      // Ждем завершения перехода яркости
+      await new Promise((resolve) => {
+        document.body.addEventListener("transitionend", resolve, {
+          once: true,
+        });
+      });
 
-        // Возвращаем яркость
-        document.body.style.filter = "brightness(1)";
-        document.getElementById("mapButton").disabled = false;
-      }, 1000);
+      // ПОСЛЕ полной загрузки и завершения анимаций:
+      document.getElementById("alienContainer").style.display = "block";
+      document.getElementById("exploreButton").style.display = "block";
+      document.getElementById("talkButton").style.display = "block";
+      document.getElementById("leaveButton").style.display = "block";
+
+      // Блокируем кнопки
+      document.getElementById("exploreButton").disabled = true;
+      document.getElementById("talkButton").disabled = true;
+      document.getElementById("leaveButton").disabled = true;
+      document.getElementById("mapButton").disabled = true;
+
+      // Убираем параметр состояния из URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      // Показываем ответ пришельца
+      showAlienResponseAfterReturn();
     });
   } else {
     const response = await fetch("../json/prehistory.json");
@@ -131,7 +136,6 @@ function typewriterEffect(
             document.getElementById("mapButton").disabled = false;
           }, 1000);
         }
-
         if (callback) callback();
       }, 1000);
     } else {
@@ -650,6 +654,24 @@ function toggleMap() {
 mapButton.addEventListener("click", toggleMap);
 closeMapButton.addEventListener("click", toggleMap);
 mapContainer.querySelector(".map-overlay").addEventListener("click", toggleMap);
+function finalDialogTypewriter(element, text, speed, callback) {
+  let i = 0;
+  element.innerHTML = "";
+
+  function type() {
+    if (i < text.length) {
+      element.innerHTML += text.charAt(i) === "\n" ? "<br>" : text.charAt(i);
+      element.parentElement.scrollTop = element.parentElement.scrollHeight;
+      i++;
+      setTimeout(type, speed);
+    } else if (callback) {
+      callback();
+    }
+  }
+
+  type();
+}
+
 async function showAlienResponseAfterReturn() {
   const data = await loadPrehistory();
   const dialogContainer = document.getElementById("dialogContainer");
@@ -679,21 +701,31 @@ async function showAlienResponseAfterReturn() {
 
   // Показываем текст и затем кнопки выбора планет
   typewriterEffect(dialogText, data[responseKey], 50, false, false, () => {
-    showPlanetChoices();
+    document.getElementById("exploreButton").disabled = true;
+    document.getElementById("leaveButton").disabled = true;
+    document.getElementById("talkButton").addEventListener("click", () => {
+      document.getElementById("exploreButton").style.display = "none";
+      document.getElementById("leaveButton").style.display = "none";
+      document.getElementById("exploreButton").disabled = true;
+      document.getElementById("leaveButton").disabled = true;
+      showPlanetChoices();
+    });
   });
 }
+
 async function showPlanetChoices() {
   const data = await loadPrehistory();
   const dialogOptions = document.getElementById("dialogOptions");
   const choices = data["planet-choices"];
 
   dialogOptions.innerHTML = `
-    <div class="d-flex justify-content-center gap-3">
-      <button class="btn btn-lg" data-planet="nebula">${choices["nebula"]}</button>
-      <button class="btn btn-lg" data-planet="station">${choices["station"]}</button>
-      <button class="btn btn-lg" data-planet="mirror">${choices["mirror"]}</button>
-    </div>
-  `;
+        <div class="d-flex justify-content-center gap-3">
+            <button class="btn btn-lg" data-planet="nebula">${choices["nebula"]}</button>
+            <button class="btn btn-lg" data-planet="station">${choices["station"]}</button>
+            <button class="btn btn-lg" data-planet="mirror">${choices["mirror"]}</button>
+            <button class="btn btn-lg" data-planet="leave">${choices["leave"]}</button>
+        </div>
+    `;
   dialogOptions.style.display = "block";
 
   document.querySelectorAll("#dialogOptions button").forEach((button) => {
@@ -701,17 +733,54 @@ async function showPlanetChoices() {
       const planetType = button.getAttribute("data-planet");
       const dialogContainer = document.getElementById("dialogContainer");
       const dialogText = document.getElementById("dialogText");
+      const alienContainer = document.getElementById("alienContainer");
+      const talkButton = document.getElementById("talkButton");
 
-      // Получаем ключ для ответа пришельца
-      const responseKey = `${planetType}-alien-talk`;
-
-      dialogText.innerHTML = "";
-      typewriterEffect(dialogText, data[responseKey], 50, true);
+      // Скрываем кнопки выбора
       dialogOptions.style.display = "none";
 
-      // Блокируем кнопки после выбора
-      document.getElementById("exploreButton").disabled = true;
-      document.getElementById("leaveButton").disabled = true;
+      // Используем новую функцию для печати
+      finalDialogTypewriter(
+        dialogText,
+        data[`${planetType}-alien-talk`],
+        50,
+        () => {
+          if (planetType === "leave") {
+            // Анимация скрытия пришельца и диалога
+            dialogContainer.classList.add("hidden");
+            alienContainer.classList.add("exit");
+
+            setTimeout(() => {
+              dialogContainer.style.display = "none";
+              alienContainer.style.display = "none";
+
+              // Создаем кнопку "К кораблю" вместо "Поговорить"
+              const returnToShipBtn = document.createElement("button");
+              returnToShipBtn.id = "returnToShipBtn";
+              returnToShipBtn.textContent = "К кораблю";
+              returnToShipBtn.className = "btn btn-outline-purple";
+              returnToShipBtn.style.margin = "0 10px";
+
+              // Заменяем кнопку "Поговорить"
+              talkButton.parentNode.replaceChild(returnToShipBtn, talkButton);
+
+              // Обработчик для кнопки "К кораблю"
+              returnToShipBtn.addEventListener("click", () => {
+                // Возвращаемся к обычному состоянию интерфейса
+                returnToShipBtn.remove();
+
+                // Восстанавливаем кнопки управления
+                document.getElementById("exploreButton").disabled = false;
+                document.getElementById("leaveButton").disabled = false;
+                document.getElementById("mapButton").disabled = false;
+              });
+            }, 1000);
+          } else {
+            // Для других планет: снова показываем кнопки выбора
+            showPlanetChoices();
+          }
+        }
+      );
     });
   });
 }

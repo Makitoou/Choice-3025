@@ -1,60 +1,5 @@
+let cutsceneShown = false;
 document.addEventListener("DOMContentLoaded", () => {
-  // document.getElementById("play").addEventListener("click", () => {
-  //   const grid = document.createElement("div");
-  //   grid.classList.add("grid");
-  //   document.querySelector("#playfield .field").appendChild(grid);
-  //   play();
-  //   document.getElementById("menu").classList.add("hidden");
-  //   setTimeout(() => {
-  //     document.getElementById("menu").style.display = "none";
-  //     document.getElementById("playfield").style.display = "flex";
-  //     setTimeout(() => {
-  //       document.getElementById("playfield").classList.remove("hidden");
-  //     }, 100);
-  //   }, 300);
-  // });
-
-  // document.getElementById("open-settings").addEventListener("click", () => {
-  //   document.getElementById("menu").classList.add("hidden");
-  //   setTimeout(() => {
-  //     document.getElementById("menu").style.display = "none";
-  //     document.getElementById("settings").style.display = "flex";
-  //     setTimeout(() => {
-  //       document.getElementById("settings").classList.remove("hidden");
-  //     }, 100);
-  //   }, 300);
-  // });
-
-  // document.getElementById("open-rate").addEventListener("click", () => {
-  //   document.getElementById("menu").classList.add("hidden");
-  //   setTimeout(() => {
-  //     document.getElementById("menu").style.display = "none";
-  //     document.getElementById("rate").style.display = "flex";
-  //     setTimeout(() => {
-  //       document.getElementById("rate").classList.remove("hidden");
-  //     }, 100);
-  //   }, 300);
-  // });
-
-  // Array.from(document.getElementsByClassName("open-menu")).forEach((el) => {
-  //   el.addEventListener("click", () => {
-  //     document.getElementById("playfield").classList.add("hidden");
-  //     document.getElementById("settings").classList.add("hidden");
-  //     document.getElementById("rate").classList.add("hidden");
-  //     setTimeout(() => {
-  //       document.getElementById("playfield").style.display = "none";
-  //       if (document.querySelector(".grid")) {
-  //         document.querySelector(".grid").remove();
-  //       }
-  //       document.getElementById("settings").style.display = "none";
-  //       document.getElementById("rate").style.display = "none";
-  //       document.getElementById("menu").style.display = "flex";
-  //       setTimeout(() => {
-  //         document.getElementById("menu").classList.remove("hidden");
-  //       }, 100);
-  //     }, 300);
-  //   });
-  // });
   const canvas = document.getElementById("spaceCanvas");
   const ctx = canvas.getContext("2d");
 
@@ -126,14 +71,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const playButton = document.getElementById("play-btn");
   let isIntroShown = localStorage.getItem("introShown");
 
-  // if (isIntroShown) {
-  //   playButton.onclick = () => window.open("html/play.html", "_self");
-  //   return;
-  // }
+  if (isIntroShown) {
+    playButton.onclick = () => window.open("html/play.html", "_self");
+    return;
+  }
+
   playButton.addEventListener("click", async (e) => {
     e.preventDefault();
     let typewriter;
     let data;
+    let shouldShowCutscene = false;
 
     const overlay = document.createElement("div");
     overlay.style.cssText = `
@@ -160,15 +107,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const skipBtn = document.createElement("div");
     skipBtn.textContent = "[ESC] Пропустить";
     skipBtn.style.cssText = `
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    color: #8A2BE2;
-    opacity: 0.7;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: opacity 0.5s;
-  `;
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      color: #8A2BE2;
+      opacity: 0.7;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: opacity 0.5s;
+    `;
     skipBtn.onmouseover = () => (skipBtn.style.opacity = "1");
     skipBtn.onmouseout = () => (skipBtn.style.opacity = "0.7");
 
@@ -184,18 +131,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const overlay = document.createElement("div");
       overlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: black;
-      z-index: 1000;
-    `;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: black;
+        z-index: 1000;
+      `;
       document.body.appendChild(overlay);
       setTimeout(() => {
         window.open("./html/play.html", "_self");
-      }, 500);
+      }, 3000);
     };
     skipBtn.addEventListener("click", skipHandler);
     document.addEventListener("keydown", (e) => {
@@ -213,28 +160,50 @@ document.addEventListener("DOMContentLoaded", () => {
       textContainer.style.visibility = "visible";
 
       typewriter = typewriterEffect(textContainer, data.intro, 70);
-      setInterval(() => {
-        typewriter.removeOldLines();
-      }, 20000);
       await typewriter;
-
+      
+      if (shouldShowCutscene || !cutsceneShown) {
+        showCutscene();
+        cutsceneShown = true;
+        setTimeout(() => {
+          window.open("./html/play.html", "_self");
+        }, 5000); // время показа кат-сцены в миллисекундах
+      }
       localStorage.setItem("introShown", "true");
-      overlay.onclick = () => {
-        overlay.remove();
-        window.open("./html/play.html", "_self");
-      };
+      window.addEventListener("load", function () {
+        document.body.style.filter = "";
+        document.body.style.transition = "";
+      });
     } catch (error) {
       console.error("Ошибка:", error);
       window.open("./html/play.html", "_self");
     }
   });
 });
+
 function typewriterEffect(element, text, speed = 50) {
   let isTyping = true;
   let resolvePromise;
+  let shouldShowCutscene = false;
+
   const promise = new Promise((resolve) => {
     resolvePromise = resolve;
     let i = 0;
+
+    function skipHandler(e) {
+      if (e.key === "Escape") {
+        i = text.length;
+        element.innerHTML = text.replace(/\n/g, "<br>");
+        document.removeEventListener("keydown", skipHandler);
+        setTimeout(() => {
+          resolvePromise();
+          shouldShowCutscene = true;
+        }, 3000);
+      }
+    }
+
+    document.addEventListener("keydown", skipHandler);
+
     function type() {
       if (!isTyping) return resolve();
       if (i < text.length) {
@@ -243,6 +212,7 @@ function typewriterEffect(element, text, speed = 50) {
         i++;
         setTimeout(type, speed);
       } else {
+        document.removeEventListener("keydown", skipHandler);
         resolve();
       }
     }
@@ -254,5 +224,99 @@ function typewriterEffect(element, text, speed = 50) {
     resolvePromise();
   };
 
+  promise.shouldShowCutscene = () => shouldShowCutscene;
+
   return promise;
+}
+
+function showCutscene() {
+  const existing = document.getElementById("cutscene");
+  if (existing) existing.remove();
+
+  const cutscene = document.createElement("div");
+  cutscene.id = "cutscene";
+  cutscene.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    pointer-events: none;
+    background-image: url('../images/stars.png');
+    background-size: cover;
+    background-position: center;
+  `;
+
+  const panel = document.createElement("img");
+  panel.src = "../images/panel.png";
+  panel.style.width = "100%";
+  panel.style.maxWidth = "1900px";
+  panel.style.top = "500px";
+  panel.style.position = "relative";
+  panel.style.transition = "transform 0.1s";
+
+  panel.onerror = () => {
+    panel.alt = "Панель управления";
+    panel.style.backgroundColor = "#2c3e50";
+    panel.style.padding = "20px";
+    panel.style.color = "white";
+    panel.style.textAlign = "center";
+    panel.textContent = "Изображение панели управления";
+  };
+
+  const planet = document.createElement("div");
+  planet.style.cssText = `
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #211a1a, #47301a);
+    box-shadow: 0 0 20px rgba(221, 134, 103, 0.7);
+    top: 100px;
+    right: 30%;
+    transition: transform 0.5s;
+  `;
+
+  cutscene.appendChild(panel);
+  cutscene.appendChild(planet);
+  document.body.appendChild(cutscene);
+
+  let posY = -100;
+  let scale = 0.1;
+  let shakeIntensity = 3;
+
+  const animate = () => {
+    if (posY < 100) {
+      posY += 2;
+      scale += 0.02;
+      shakeIntensity = 3 - (posY / 100) * 3;
+
+      planet.style.bottom = `${posY}px`;
+      planet.style.transform = `scale(${scale})`;
+      panel.style.transform = `translate(
+        ${(Math.random() - 0.5) * shakeIntensity}px, 
+        ${(Math.random() - 0.5) * shakeIntensity}px
+      )`;
+
+      requestAnimationFrame(animate);
+    } else {
+      setTimeout(() => {
+        cutscene.style.opacity = "0";
+        cutscene.style.transition = "opacity 0.5s";
+        setTimeout(() => {
+          if (cutscene.parentNode) {
+            cutscene.parentNode.removeChild(cutscene);
+          }
+        }, 1000);
+      }, 3000);
+      document.body.style.filter = "brightness(0)";
+      document.body.style.transition = "filter 0.5s";
+    }
+  };
+
+  animate();
 }
