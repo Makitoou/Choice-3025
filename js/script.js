@@ -252,7 +252,7 @@ function showCutscene() {
   `;
 
   const panel = document.createElement("img");
-  panel.src = "../images/panel.png";
+  panel.src = "./images/panel.png";
   panel.style.width = "100%";
   panel.style.maxWidth = "1900px";
   panel.style.top = "500px";
