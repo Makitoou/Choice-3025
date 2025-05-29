@@ -20,6 +20,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     returnButton.id = "returnToShipButton";
     returnButton.textContent = "Вернуться к Биби";
     returnButton.className = "btn btn-outline-purple";
+    returnButton.style.width = "400px";
+    returnButton.style.height = "60px";
     returnButton.style.position = "fixed";
     returnButton.style.bottom = "20px";
     returnButton.style.left = "50%";
@@ -759,22 +761,63 @@ async function showPlanetChoices() {
               returnToShipBtn.id = "returnToShipBtn";
               returnToShipBtn.textContent = "К кораблю";
               returnToShipBtn.className = "btn btn-outline-purple";
+              returnToShipBtn.style.width = "400px";
+              returnToShipBtn.style.height = "60px";
               returnToShipBtn.style.margin = "0 10px";
 
               // Заменяем кнопку "Поговорить"
               talkButton.parentNode.replaceChild(returnToShipBtn, talkButton);
 
               // Обработчик для кнопки "К кораблю"
-              returnToShipBtn.addEventListener("click", () => {
-                // Возвращаемся к обычному состоянию интерфейса
-                returnToShipBtn.remove();
+              returnToShipBtn.addEventListener("click", function () {
+                // Анимация затемнения фона
+                const darkOverlay = document.createElement("div");
+                darkOverlay.id = "darkOverlay";
+                darkOverlay.style.position = "fixed";
+                darkOverlay.style.top = "0";
+                darkOverlay.style.left = "0";
+                darkOverlay.style.width = "100%";
+                darkOverlay.style.height = "100%";
+                darkOverlay.style.backgroundColor = "rgba(0,0,0,0.7)";
+                darkOverlay.style.zIndex = "999";
+                darkOverlay.style.opacity = "0";
+                darkOverlay.style.transition = "opacity 1s ease";
+                document.body.appendChild(darkOverlay);
 
-                // Восстанавливаем кнопки управления
-                document.getElementById("exploreButton").disabled = false;
-                document.getElementById("leaveButton").disabled = false;
-                document.getElementById("mapButton").disabled = false;
+                // Создаем элемент корабля
+                const spacecraft = document.createElement("img");
+                spacecraft.id = "spacecraftImage";
+                spacecraft.src = "../images/spacecraft.png"; // Путь к изображению корабля
+                spacecraft.alt = "Spacecraft";
+                spacecraft.style.position = "fixed";
+                spacecraft.style.bottom = "50px";
+                spacecraft.style.width = "400px";
+                spacecraft.style.height = "800px";
+                spacecraft.style.opacity = "0";
+                spacecraft.style.zIndex = "1002";
+                spacecraft.style.transition =
+                  "left 1.5s ease, opacity 1.5s ease";
+                document.body.appendChild(spacecraft);
+
+                // Плавное появление корабля
+                setTimeout(() => {
+                  spacecraft.style.left = "200px";
+                  spacecraft.style.opacity = "1";
+                }, 300);
+
+                // После завершения анимации восстанавливаем интерфейс
+                setTimeout(() => {
+                  // Удаляем кнопку "К кораблю"
+                  returnToShipBtn.remove();
+                }, 2000); // Общее время анимации
               });
             }, 1000);
+            spacecraft.addEventListener("mouseover", () => {
+              spacecraft.style.filter = "brightness(1.2)";
+            });
+            spacecraft.addEventListener("mouseout", () => {
+              spacecraft.style.filter = "";
+            });
           } else {
             // Для других планет: снова показываем кнопки выбора
             showPlanetChoices();
