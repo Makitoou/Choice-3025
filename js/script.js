@@ -246,7 +246,7 @@ function showCutscene() {
     align-items: center;
     z-index: 2000;
     pointer-events: none;
-    background-image: url('../images/stars.png');
+    background-image: url('./images/stars.png');
     background-size: cover;
     background-position: center;
   `;
