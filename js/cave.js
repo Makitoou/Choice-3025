@@ -39,6 +39,10 @@ function createSurfaceImages() {
     };
 
     imageElem.addEventListener("click", () => {
+      const artifactId = imgData.id; // Добавьте ID в imagesData
+      if (window.collectArtifact) {
+        window.collectArtifact(artifactId);
+      }
       imageElem.style.opacity = "0";
       setTimeout(() => imageElem.remove(), 1000);
     });

@@ -1,3 +1,92 @@
+let currentPlayer = null;
+
+async function initGame() {
+  const playerId = localStorage.getItem("playerId");
+
+  if (playerId) {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/players/${playerId}`
+      );
+      currentPlayer = await response.json();
+      updateUI();
+    } catch (error) {
+      console.error("Error loading player:", error);
+      createNewPlayer();
+    }
+  } else {
+    createNewPlayer();
+  }
+}
+
+async function createNewPlayer() {
+  try {
+    const response = await fetch("http://localhost:3000/api/players", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: "Explorer" }),
+    });
+
+    currentPlayer = await response.json();
+    localStorage.setItem("playerId", currentPlayer.id);
+    updateUI();
+  } catch (error) {
+    console.error("Error creating player:", error);
+  }
+}
+
+function updateUI() {
+  document.querySelector(
+    ".text-white.m-0:nth-child(1)"
+  ).textContent = `Энергия: ${currentPlayer.energy}%`;
+  document.querySelector(
+    ".text-white.m-0:nth-child(2)"
+  ).textContent = `Щиты: ${currentPlayer.shields}%`;
+  document.querySelector(
+    ".text-white.m-0:nth-child(3)"
+  ).textContent = `Топливо: ${currentPlayer.fuel}%`;
+}
+
+// При сборе артефакта
+async function collectArtifact(artifactId) {
+  try {
+    await fetch(
+      `http://localhost:3000/api/artifacts/${currentPlayer.id}/collect/${artifactId}`,
+      {
+        method: "PUT",
+      }
+    );
+
+    // Обновляем данные игрока
+    const response = await fetch(
+      `http://localhost:3000/api/players/${currentPlayer.id}`
+    );
+    currentPlayer = await response.json();
+    updateUI();
+  } catch (error) {
+    console.error("Error collecting artifact:", error);
+  }
+}
+
+// При смене локации
+async function updateLocation(location) {
+  try {
+    await fetch(
+      `http://localhost:3000/api/players/${currentPlayer.id}/location`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ location }),
+      }
+    );
+  } catch (error) {
+    console.error("Error updating location:", error);
+  }
+}
+
+// Вызов при переходе между экранами
+updateLocation("cave");
+
 let surfaceHeightValue = 0.2;
 let enterImage = null;
 let imagesOnSurface = [];
@@ -75,7 +164,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("exploreButton").disabled = true;
       document.getElementById("talkButton").disabled = true;
       document.getElementById("leaveButton").disabled = true;
-      document.getElementById("mapButton").disabled = true;
 
       // Убираем параметр состояния из URL
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -96,6 +184,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     typewriterEffect(dialogText, data.dialog, 50, false, true);
   }
   dialogContainer.classList.add("dialog-hidden");
+  await initGame();
 });
 
 function typewriterEffect(
@@ -135,7 +224,6 @@ function typewriterEffect(
             document.getElementById("talkButton").disabled = true;
             document.getElementById("leaveButton").disabled = true;
             document.getElementById("exploreButton").disabled = false;
-            document.getElementById("mapButton").disabled = false;
           }, 1000);
         }
         if (callback) callback();
@@ -380,28 +468,6 @@ function draw() {
 
 animate(0);
 
-let hoveredPlanet = null;
-
-function drawHoverEffect() {
-  if (!hoveredPlanet) return;
-
-  const scaleX = canvas_map.width / 600;
-  const scaleY = canvas_map.height / 400;
-  const radius = planetRadii[hoveredPlanet.color] * Math.min(scaleX, scaleY);
-
-  ctx_map.save();
-  ctx_map.beginPath();
-  ctx_map.arc(
-    hoveredPlanet.x * 600 * scaleX,
-    hoveredPlanet.y * 400 * scaleY,
-    radius * 1.2,
-    0,
-    Math.PI * 2
-  );
-  ctx_map.fillStyle = `rgba(255, 255, 255, 0.3)`;
-  ctx_map.fill();
-  ctx_map.restore();
-}
 async function loadPrehistory() {
   const response = await fetch("../json/prehistory.json");
   return await response.json();
@@ -444,7 +510,6 @@ async function showDialogOptions() {
 
       const dialogOptions = document.getElementById("dialogOptions");
       dialogOptions.style.display = "none";
-      document.getElementById("mapButton").disabled = false;
     });
   });
 }
@@ -452,7 +517,6 @@ async function showDialogOptions() {
 // Обработчик кнопки "Поговорить"
 document.getElementById("talkButton").addEventListener("click", () => {
   toggleButtons(true);
-  document.getElementById("mapButton").disabled = true;
   showDialogOptions();
 });
 
@@ -471,7 +535,7 @@ document.querySelectorAll("#dialogOptions button").forEach((button) => {
 });
 // Функция для блокировки/разблокировки кнопок
 function toggleButtons(state) {
-  const buttons = ["exploreButton", "talkButton", "leaveButton", "mapButton"];
+  const buttons = ["exploreButton", "talkButton", "leaveButton"];
   buttons.forEach((id) => {
     const btn = document.getElementById(id);
     if (btn) btn.disabled = state;
@@ -685,32 +749,7 @@ function animateReturnToShip() {
     animation();
   });
 }
-//Карта
-let mapVisible = false;
-const mapContainer = document.getElementById("mapContainer");
-const mapImage = document.getElementById("mapImage");
-const mapButton = document.getElementById("mapButton");
-const closeMapButton = document.getElementById("closeMapButton");
 
-function toggleMap() {
-  const isDialogActive = document
-    .getElementById("dialogContainer")
-    .classList.contains("dialog-visible");
-  if (isDialogActive) return;
-  mapVisible = !mapVisible;
-
-  if (mapVisible) {
-    mapContainer.classList.add("visible");
-    toggleButtons(true);
-  } else {
-    mapContainer.classList.remove("visible");
-    setTimeout(() => toggleButtons(false), 500);
-  }
-}
-
-mapButton.addEventListener("click", toggleMap);
-closeMapButton.addEventListener("click", toggleMap);
-mapContainer.querySelector(".map-overlay").addEventListener("click", toggleMap);
 function finalDialogTypewriter(element, text, speed, callback) {
   let i = 0;
   element.innerHTML = "";
@@ -842,7 +881,7 @@ async function showPlanetChoices() {
                 // Создаем элемент корабля
                 const spacecraft = document.createElement("img");
                 spacecraft.id = "spacecraftImage";
-                spacecraft.src = "../images/spacecraft.png"; // Путь к изображению корабля
+                spacecraft.src = "../images/spacecraft.png";
                 spacecraft.alt = "Spacecraft";
                 spacecraft.style.position = "fixed";
                 spacecraft.style.bottom = "50px";
@@ -860,19 +899,23 @@ async function showPlanetChoices() {
                   spacecraft.style.opacity = "1";
                 }, 300);
 
+                // Добавляем обработчики событий на корабль
+                spacecraft.addEventListener("mouseover", () => {
+                  spacecraft.style.filter = "brightness(1.2)";
+                });
+                spacecraft.addEventListener("mouseout", () => {
+                  spacecraft.style.filter = "";
+                });
+                spacecraft.addEventListener("click", () => {
+                  showScene();
+                });
+
                 // После завершения анимации восстанавливаем интерфейс
                 setTimeout(() => {
-                  // Удаляем кнопку "К кораблю"
                   returnToShipBtn.remove();
-                }, 2000); // Общее время анимации
+                }, 300);
               });
             }, 1000);
-            spacecraft.addEventListener("mouseover", () => {
-              spacecraft.style.filter = "brightness(1.2)";
-            });
-            spacecraft.addEventListener("mouseout", () => {
-              spacecraft.style.filter = "";
-            });
           } else {
             // Для других планет: снова показываем кнопки выбора
             showPlanetChoices();
@@ -882,3 +925,245 @@ async function showPlanetChoices() {
     });
   });
 }
+function showScene() {
+  // Создаем контейнер для катсцены
+  const scene = document.createElement("div");
+  scene.id = "scene";
+  scene.style.cssText = `
+        position: fixed;
+        top: -325px;
+        left: 0;
+        width: 100%;
+        height: 90%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    `;
+
+  // Создаем изображение панели
+  const panel = document.createElement("img");
+  panel.src = "../images/panel_map.png";
+  panel.alt = "Панель управления кораблем";
+  panel.style.width = "100%";
+  panel.style.maxWidth = "2000px";
+  panel.style.top = "780px";
+  panel.style.position = "relative";
+  panel.style.transition = "opacity 2s";
+
+  // Создаем кнопку Карта
+  const mapBtn = document.createElement("button");
+  mapBtn.id = "mapButton";
+  mapBtn.className = "btn btn-outline-purple";
+  mapBtn.style.cssText = `position: fixed;
+    width: 25%;
+    top: 3%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2001; // Увеличиваем z-index для кнопки
+  `;
+  mapBtn.textContent = "Карта";
+
+  // Проверяем, существует ли уже контейнер карты
+
+  let mapContainer = document.getElementById("mapContainer");
+
+  if (!mapContainer) {
+    // Создаем контейнер для карты (изначально скрыт)
+    mapContainer = document.createElement("div");
+    mapContainer.id = "mapContainer";
+    mapContainer.style.display = "none";
+
+    // Добавляем стили для позиционирования
+    mapContainer.style.position = "fixed";
+    mapContainer.style.top = "0";
+    mapContainer.style.left = "0";
+    mapContainer.style.width = "100%";
+    mapContainer.style.height = "100%";
+    mapContainer.style.justifyContent = "center";
+    mapContainer.style.alignItems = "center";
+    mapContainer.style.backgroundColor = "rgba(0,0,0,0.7)";
+    mapContainer.style.zIndex = "3000";
+
+    document.body.appendChild(mapContainer);
+    document.body.appendChild(mapContainer);
+
+    // Обертка для карты
+    const mapWrapper = document.createElement("div");
+    mapWrapper.className = "map-wrapper";
+    mapContainer.appendChild(mapWrapper);
+
+    // Изображение карты
+    const map = document.createElement("img");
+    map.id = "mapImage";
+    map.src = "../images/map.png";
+    map.alt = "Карта";
+    map.className = "map-image";
+    mapWrapper.appendChild(map);
+
+    // Кнопка закрытия карты
+    const closeMapBtn = document.createElement("button");
+    closeMapBtn.id = "closeMapBtn";
+    closeMapBtn.innerHTML = "&times;";
+    closeMapBtn.style.zIndex = "3001"; // Увеличиваем z-index
+    mapContainer.appendChild(closeMapBtn);
+
+    // Обработчики событий
+    closeMapBtn.addEventListener("click", () => {
+      mapContainer.style.display = "none";
+    });
+  }
+
+  // Обработчик для кнопки карты
+  mapBtn.addEventListener("click", () => {
+    mapContainer.style.display = "flex";
+
+    // Координаты планет (обновляем при каждом открытии)
+    const mapImage = document.getElementById("mapImage");
+    const mapWrapper = mapImage.parentElement;
+
+    // Удаляем старые кнопки планет
+    document.querySelectorAll(".planet-btn").forEach((btn) => btn.remove());
+
+    // Координаты планет в пикселях относительно карты
+    const planets = [
+      { surname: "Активия", name: "nebula", x: 50, y: 50 }, // Примерные координаты
+      { surname: "Фиалка", name: "station", x: 17, y: 22 }, // Нужно подобрать под вашу карту
+      { surname: "Зеркало", name: "mirror", x: 38, y: 20 }, // На основе вашего изображения
+    ];
+    const planetSizes = {
+      nebula: { width: 6, height: 14 },
+      station: { width: 8, height: 18 },
+      mirror: { width: 4, height: 10 },
+    };
+
+    // Создаем интерактивные кнопки планет
+    planets.forEach((planet) => {
+      const planetBtn = document.createElement("div");
+      planetBtn.className = "planet-btn";
+      planetBtn.dataset.planet = planet.name;
+      planetBtn.dataset.title = "Заголовок планеты";
+      planetBtn.style.position = "absolute";
+      planetBtn.style.left = `${planet.x}%`;
+
+      planetBtn.style.top = `${planet.y}%`;
+      planetBtn.style.zIndex = "20"; // Выше карты
+
+      // Добавляем индивидуальные размеры для каждой кнопки
+      const size = planetSizes[planet.name];
+      planetBtn.style.width = `${size.width}%`;
+      planetBtn.style.height = `${size.height}%`;
+
+      mapWrapper.appendChild(planetBtn);
+
+      planetBtn.addEventListener("click", function () {
+        showCutsceneForPlanet();
+      });
+    });
+  });
+
+  // Добавляем панель в контейнер
+  scene.appendChild(panel);
+  scene.appendChild(mapBtn);
+  document.body.appendChild(scene);
+
+  // Анимация появления
+  setTimeout(() => {
+    panel.style.opacity = "1";
+  }, 300);
+
+  const spacecraft = document.getElementById("spacecraftImage");
+  const leftPanel = document.getElementById("left-panel");
+  const rightPanel = document.getElementById("right-panel");
+  if (spacecraft) spacecraft.remove();
+  if (leftPanel) leftPanel.remove();
+  if (rightPanel) rightPanel.remove();
+}
+
+function showCutsceneForPlanet() {
+  const mapContainer = document.getElementById("mapContainer");
+  const scene = document.getElementById("scene");
+  if (mapContainer) mapContainer.remove();
+  if (scene) scene.remove();
+  const cutscene = document.createElement("div");
+  cutscene.id = "final_cutscene";
+  cutscene.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url('../images/stars.png');
+    pointer-events: none;
+  `;
+
+  const panel = document.createElement("img");
+  panel.id = "final_brown";
+  panel.src = "../images/panel_map.png";
+  panel.alt = "Панель управления";
+  panel.style.cssText = `
+    width: 100%;
+    max-width: 2000px;
+    position: relative;
+    transition: transform 0.1s;
+    top: "410px" !important;
+  `;
+
+  // Создаем планету с фиолетовым цветом
+  const planet = document.createElement("div");
+  planet.style.cssText = `
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #5a189a, #9d4edd);
+    box-shadow: 0 0 40px rgba(157, 78, 221, 0.8);
+    top: 100px;
+    right: 30%;
+    transition: transform 0.5s;
+    z-index: 10;
+  `;
+
+  cutscene.appendChild(panel);
+  cutscene.appendChild(planet);
+  document.body.appendChild(cutscene);
+
+  let posY = -100;
+  let scale = 0.1;
+  let shakeIntensity = 3;
+
+  const animate = () => {
+    if (posY < 100) {
+      posY += 2;
+      scale += 0.02;
+      shakeIntensity = 3 - (posY / 100) * 3;
+
+      planet.style.bottom = `${posY}px`;
+      planet.style.transform = `scale(${scale})`;
+      panel.style.transform = `translate(
+        ${(Math.random() - 0.5) * shakeIntensity}px, 
+        ${(Math.random() - 0.5) * shakeIntensity}px
+      )`;
+
+      requestAnimationFrame(animate);
+    } else {
+      setTimeout(() => {
+        // Затемнение экрана перед переходом
+        document.body.style.transition = "filter 1s ease";
+        document.body.style.filter = "brightness(0)";
+
+        // Переход на station.html после затемнения
+        setTimeout(() => {
+          window.location.href = "station.html";
+        }, 1000);
+      }, 1000);
+    }
+  };
+
+  animate();
+}
+// Сделаем функции доступными глобально
+window.collectArtifact = collectArtifact;
+window.updateLocation = updateLocation;
