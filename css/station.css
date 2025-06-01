@@ -1,0 +1,85 @@
+.btn-outline-purple {
+  border: 1px solid white !important;
+}
+.alien-container {
+  position: fixed;
+  right: -500px;
+  bottom: 0;
+  width: 500px;
+  height: 700px;
+  animation: alienEnter 1.5s ease-out forwards;
+  z-index: 0;
+  transform: scale(1.2);
+}
+
+.alien-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.btn-lg {
+  border-width: 2px;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.bi-door-closed {
+  width: 100px;
+  height: 100px;
+}
+svg {
+  padding-left: 0;
+  margin-left: 0;
+  padding-bottom: 10px;
+}
+.btn-outline-purple {
+  background-color: #8a2be2;
+  color: white;
+  border-color: #8a2be2;
+  transition: all 0.3s ease;
+}
+.btn-outline-purple:hover {
+  background-color: #8a2be2;
+  color: white;
+  transform: translateY(-2px);
+}
+body {
+  position: relative;
+  margin: 0;
+  min-height: 100vh;
+}
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  z-index: -2;
+}
+html,
+body {
+  overflow: hidden !important;
+  height: 100%;
+}
+.neon-title {
+  color: #8a2be2;
+  text-shadow: 0 0 10px #8a2be2, 0 0 20px #8a2be2, 0 0 30px #8a2be2,
+    0 0 40px #6a1b9a;
+  animation: neon-pulse 1.5s infinite alternate;
+}
+
+.neon-title::after {
+  border: 2px solid #8a2be2;
+  box-shadow: 0 0 15px #8a2be2;
+}
+
+@keyframes neon-pulse {
+  from {
+    text-shadow: 0 0 5px #8a2be2, 0 0 15px #8a2be2, 0 0 25px #6a1b9a;
+  }
+  to {
+    text-shadow: 0 0 15px #8a2be2, 0 0 25px #8a2be2, 0 0 35px #6a1b9a;
+  }
+}

@@ -15,16 +15,17 @@
       href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../css/play.css" />
+
+    <link rel="stylesheet" href="../css/station.css" />
     <title>Выбор-3025</title>
   </head>
   <body class="user-select-none font-monospace">
     <canvas
-      id="spaceCanvas"
-      class="position-fixed top-0 start-0 w-100 h-100 z-0"
+      id="stationCanvas"
+      style="position: fixed; top: 0; left: 0"
     ></canvas>
     <div class="alien-container" id="alienContainer">
-      <img src="../images/alien.png" alt="Пришелец" class="img-fluid" />
+      <img src="../images/PrinceNebulon.png" alt="Пришелец" class="img-fluid" />
     </div>
     <div
       class="container-fluid position-relative z-1 h-100 px-0"
@@ -34,7 +35,12 @@
         <div
           class="col-auto border-purple pe-0 d-flex flex-column align-items-center"
           id="left-panel"
-          style="background: #483d8b; min-width: 200px; margin-left: 0; z-index: 1001;"
+          style="
+            background: #483d8b;
+            min-width: 200px;
+            margin-left: 0;
+            z-index: 1001;
+          "
         >
           <div class="pt-3 w-100 px-3 text-center">
             <svg
@@ -83,6 +89,7 @@
                 <button
                   class="btn btn-outline-purple w-100 py-3"
                   id="exploreButton"
+                  style="border: 1px solid white !important"
                 >
                   Исследовать
                 </button>
@@ -91,6 +98,7 @@
                 <button
                   class="btn btn-outline-purple w-100 py-3"
                   id="talkButton"
+                  style="border: 1px solid white !important"
                 >
                   Поговорить
                 </button>
@@ -99,6 +107,7 @@
                 <button
                   class="btn btn-outline-purple w-100 py-3"
                   id="leaveButton"
+                  style="border: 1px solid white !important"
                 >
                   К кораблю
                 </button>
@@ -110,7 +119,12 @@
         <div
           class="col-auto border-purple ps-0 d-flex flex-column align-items-center"
           id="right-panel"
-          style="background: #483d8b; min-width: 200px; margin-right: 0; z-index: 1001;"
+          style="
+            background: #483d8b;
+            min-width: 200px;
+            margin-right: 0;
+            z-index: 1001;
+          "
         >
           <div class="pt-3 w-100 px-3 text-center">
             <h5 class="text-purple neon-title">Статус</h5>
@@ -124,6 +138,6 @@
       </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/background.js"></script>
+    <script src="../js/station.js"></script>
   </body>
 </html>

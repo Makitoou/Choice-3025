@@ -2,8 +2,28 @@
   background-color: #8a2be2;
   color: white;
   border-color: #8a2be2;
+  transition: all 0.3s ease;
 }
-
+.btn-outline-purple:hover {
+  background-color: #8a2be2;
+  color: white;
+  transform: translateY(-2px);
+}
+#mapButton {
+  background-color: #8a2be2;
+  color: white;
+  border-color: #8a2be2;
+  transition: all 0.3s ease;
+  width: 50%;
+  align-items: center;
+  justify-content: center;
+}
+#mapButton:hover {
+  background-color: #7527be;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(138, 43, 226, 0.7);
+}
 .form-range::-webkit-slider-thumb {
   background-color: #8a2be2;
 }
@@ -99,10 +119,6 @@ body::before {
     transform: scale(1);
   }
 }
-
-.btn-outline-purple {
-  transition: all 0.3s ease;
-}
 html,
 body {
   overflow: hidden !important;
@@ -130,11 +146,6 @@ body {
   transition: all 0.3s ease;
 }
 
-.btn-outline-purple:hover {
-  background-color: #8a2be2;
-  color: white;
-  transform: translateY(-2px);
-}
 .bi-door-closed {
   width: 100px;
   height: 100px;
@@ -321,21 +332,24 @@ svg {
 }
 .map-container {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0); /* Начальное состояние */
+  width: 80%;
+  height: 80%;
+  background-color: rgba(0, 0, 0, 0.8);
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  z-index: 1001;
+  opacity: 0;
+  visibility: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000;
-  visibility: hidden;
-  opacity: 0;
-  transition: all 0.5s ease;
 }
 .map-container.visible {
+  animation: scaleUp 0.5s ease forwards;
   visibility: visible;
-  opacity: 1;
 }
 .map-overlay {
   position: absolute;
@@ -347,14 +361,12 @@ svg {
   backdrop-filter: blur(5px);
 }
 .map-image {
-  visibility: hidden;
   max-width: 90%;
   max-height: 90%;
   z-index: 10;
   border-radius: 50px;
-  transform: scale(0.8);
-  transition: transform 0.5s ease;
   border: 3px solid #8a2be2;
+  object-fit: contain;
   box-shadow: 0 0 40px rgba(138, 43, 226, 0.7);
 }
 .map-container.visible .map-image {
@@ -393,6 +405,16 @@ svg {
   background: rgba(0, 0, 0, 0.9);
   animation: fadeIn 0.5s forwards;
 }
+@keyframes scaleUp {
+  from {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
 
 @keyframes fadeIn {
   from {
@@ -426,4 +448,84 @@ svg {
 #left-panel,
 #right-panel {
   z-index: 1001;
+}
+#mapContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.7); /* Затемнение фона */
+  z-index: 3000;
+  display: none; /* Изначально скрыт */
+}
+
+#mapImage {
+  max-width: 70%;
+  max-height: 90%;
+  border: 3px solid #8a2be2;
+  box-shadow: 0 0 40px rgba(138, 43, 226, 0.7);
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+#closeMapBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #8a2be2;
+  color: white;
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 3001;
+}
+
+.map-wrapper {
+  position: relative;
+  display: inline-block;
+  left: 15%;
+}
+
+.planet-btn {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(138, 43, 226, 0.3);
+  border: 2px solid #8a2be2;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 20; /* Выше карты */
+}
+
+.planet-btn:hover {
+  background: rgba(138, 43, 226, 0.6);
+  transform: scale(1.2);
+  box-shadow: 0 0 15px rgba(138, 43, 226, 0.7);
+}
+#final_brown {
+  top: 410px;
+  z-index: 20;
+}
+#final_cutscene {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("../images/stars.png");
+  background-size: cover;
+  background-position: center;
+  animation: fadeIn 0.5s forwards;
 }
