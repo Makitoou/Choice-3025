@@ -4,8 +4,18 @@ const cors = require("cors");
 
 const app = express();
 
+const allowedOrigins = ["http://localhost:5173", "https://makitoou.github.io"];
 var corsOptions = {
-  origin: "http://localhost:5173",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204,
 };
 
 app.use(cors(corsOptions));

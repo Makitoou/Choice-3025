@@ -84,9 +84,6 @@ async function updateLocation(location) {
   }
 }
 
-// Вызов при переходе между экранами
-updateLocation("cave");
-
 let surfaceHeightValue = 0.2;
 let enterImage = null;
 let imagesOnSurface = [];
@@ -185,6 +182,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   dialogContainer.classList.add("dialog-hidden");
   await initGame();
+
+  if (currentPlayer) {
+    updateLocation(state === "surface_zoomed" ? "surface" : "cave");
+  }
 });
 
 function typewriterEffect(
