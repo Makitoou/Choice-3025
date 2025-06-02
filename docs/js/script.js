@@ -1,4 +1,48 @@
 let cutsceneShown = false;
+// Показать модальное окно при клике на кнопку входа
+document.getElementById("login-btn").addEventListener("click", () => {
+  new bootstrap.Modal(document.getElementById("loginModal")).show();
+});
+
+// Обработка формы входа
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const username = e.target[0].value;
+  const password = e.target[1].value;
+
+  try {
+    const response = await fetch("/api/auth/signin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+      credentials: "include", // Важно для CORS
+    });
+
+    // Обрабатываем возможные не-JSON ответы
+    const contentType = response.headers.get("content-type");
+    let data;
+
+    if (contentType && contentType.includes("application/json")) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      throw new Error(`Invalid response: ${text}`);
+    }
+
+    if (response.ok) {
+      localStorage.setItem("userToken", data.accessToken);
+      alert("Авторизация успешна!");
+      document.getElementById("loginModal").classList.remove("show");
+      document.querySelector(".modal-backdrop").remove();
+    } else {
+      alert("Ошибка: " + (data.message || response.status));
+    }
+  } catch (error) {
+    console.error("Auth error:", error);
+    alert("Ошибка авторизации: " + error.message);
+  }
+});
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("spaceCanvas");
   const ctx = canvas.getContext("2d");
@@ -78,6 +122,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   playButton.addEventListener("click", async (e) => {
     e.preventDefault();
+    // Проверяем наличие токена
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      alert("Сначала войдите в систему!");
+      return;
+    }
     let typewriter;
     let data;
     let shouldShowCutscene = false;
@@ -161,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       typewriter = typewriterEffect(textContainer, data.intro, 70);
       await typewriter;
-      
+
       if (shouldShowCutscene || !cutsceneShown) {
         showCutscene();
         cutsceneShown = true;

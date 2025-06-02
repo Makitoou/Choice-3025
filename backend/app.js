@@ -13,12 +13,25 @@ var corsOptions = {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
   credentials: true,
   optionsSuccessStatus: 204,
 };
 
+app.options("*", cors(corsOptions));
 app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS"
+    );
+    return res.status(200).json({});
+  }
+  next();
+});
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -28,8 +41,9 @@ app.get("/", (req, res) => {
 });
 
 // Подключаем маршруты
-require("./app/routes/player.routes")(app);
-require("./app/routes/artifact.routes")(app);
+require("../app/routes/auth.routes")(app);
+require("../app/routes/player.routes")(app);
+require("../app/routes/artifact.routes")(app);
 
 // Установка порта
 const PORT = process.env.PORT || 3000;

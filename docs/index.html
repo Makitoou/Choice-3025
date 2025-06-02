@@ -62,6 +62,53 @@
             </button>
             <button
               class="btn py-2 fs-5 position-relative"
+              id="login-btn"
+              style="
+                color: #8a2be2;
+                border: 2px solid #8a2be2;
+                background: transparent;
+                transition: all 0.3s ease;
+                text-shadow: 0 0 8px rgba(138, 43, 226, 0.5);
+              "
+            >
+              Войти в систему
+            </button>
+
+            <!-- Модальное окно авторизации -->
+            <div class="modal fade" id="loginModal">
+              <div class="modal-dialog">
+                <div class="modal-content bg-dark text-light">
+                  <div class="modal-header border-0">
+                    <h5 class="modal-title">Вход в систему</h5>
+                  </div>
+                  <div class="modal-body">
+                    <form id="loginForm">
+                      <div class="mb-3">
+                        <label class="form-label">Имя пользователя</label>
+                        <input
+                          type="text"
+                          class="form-control bg-dark text-light"
+                          required
+                        />
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label">Пароль</label>
+                        <input
+                          type="password"
+                          class="form-control bg-dark text-light"
+                          required
+                        />
+                      </div>
+                      <button type="submit" class="btn btn-primary w-100">
+                        Войти
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button
+              class="btn py-2 fs-5 position-relative"
               id="archive-btn"
               style="
                 color: #8a2be2;
