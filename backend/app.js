@@ -3,6 +3,12 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const app = express();
+app.use((req, res, next) => {
+  console.log("Request Method:", req.method);
+  console.log("Request URL:", req.url);
+  console.log("Request Headers:", req.headers);
+  next();
+});
 
 const allowedOrigins = ["http://localhost:5173", "https://makitoou.github.io"];
 var corsOptions = {
@@ -41,7 +47,6 @@ app.get("/", (req, res) => {
 });
 
 // Подключаем маршруты
-require("../app/routes/auth.routes")(app);
 require("../app/routes/player.routes")(app);
 require("../app/routes/artifact.routes")(app);
 
