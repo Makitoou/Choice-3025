@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Вход</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h2>Вход в систему</h2>
+      <form id="loginForm">
+        <label for="username">Имя пользователя:</label>
+        <input type="text" id="username" required />
+        <label for="password">Пароль:</label>
+        <input type="password" id="password" required />
+        <button type="submit">Войти</button>
+      </form>
+      <p>Нет аккаунта? <a href="/html/register.html">Зарегистрироваться</a></p>
+    </div>
+    <script src="../js/auth.js"></script>
+    <script>
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
+          try {
+            await login({ username, password });
+            window.location.href = "/html/play.html"; // Переход после входа
+          } catch (error) {
+            alert("Ошибка входа: " + error.message);
+          }
+        });
+    </script>
+  </body>
+</html>
