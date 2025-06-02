@@ -14,7 +14,6 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "mysql2": "^3.14.1",
-    "path-to-regexp": "^8.2.0",
     "sequelize": "^6.37.7"
   }
 }
