@@ -1,44 +1,84 @@
-import { login, logout, register, refreshToken } from "./api.js";
+import {
+  login as apiLogin,
+  logout as apiLogout,
+  register as apiRegister,
+  refreshToken,
+} from "./api.js";
 
-// Проверка срока действия токена
-function jwtDecrypt(token) {
-  const [, payload] = token.split(".");
-  return JSON.parse(atob(payload));
-}
-
-function tokenAlive(exp) {
-  return Date.now() < exp * 1000;
-}
-
-async function checkToken() {
-  const user = JSON.parse(localStorage.getItem("user"));
-  if (!user || !user.accessToken) return false;
-
-  const { exp } = jwtDecrypt(user.accessToken);
-  if (tokenAlive(exp)) return true;
-
+// Декодирование JWT
+function parseJwt(token) {
   try {
-    await refreshToken(user);
-    return true;
-  } catch (error) {
-    logout();
-    return false;
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch (e) {
+    return null;
   }
 }
 
-// Отслеживание бездействия
-let inactivityTime = null;
-const inactivityLimit = 15 * 60 * 1000; // 15 минут
+// Проверка токена
+async function checkToken() {
+  const userData = localStorage.getItem("user");
+  if (!userData) return false;
 
-function handleInactivity() {
-  clearTimeout(inactivityTime);
-  inactivityTime = setTimeout(() => {
-    logout();
-    window.location.href = "/html/login.html"; // Создадим эту страницу позже
-  }, inactivityLimit);
+  const user = JSON.parse(userData);
+  if (!user.accessToken) return false;
+
+  const payload = parseJwt(user.accessToken);
+  if (!payload) return false;
+
+  // Проверяем срок действия
+  if (Date.now() >= payload.exp * 1000) {
+    try {
+      await refreshToken();
+      return true;
+    } catch (error) {
+      console.error("Ошибка обновления токена:", error);
+      logout();
+      return false;
+    }
+  }
+
+  return true;
 }
 
-window.onload = handleInactivity;
-document.onmousemove = handleInactivity;
+// Таймер бездействия
+let inactivityTimer;
 
-export { login, logout, register, checkToken };
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(() => {
+    logout();
+    window.location.href = "/html/login.html";
+  }, 15 * 60 * 1000); // 15 минут
+}
+
+// Инициализация отслеживания активности
+function initActivityTracker() {
+  window.addEventListener("load", resetInactivityTimer);
+  window.addEventListener("mousemove", resetInactivityTimer);
+  window.addEventListener("keypress", resetInactivityTimer);
+  window.addEventListener("scroll", resetInactivityTimer);
+  window.addEventListener("click", resetInactivityTimer);
+}
+
+// Обёртки для глобального доступа в HTML
+async function login(user) {
+  return await apiLogin(user);
+}
+
+async function logout() {
+  return await apiLogout();
+}
+
+async function register(user) {
+  return await apiRegister(user);
+}
+
+// Экспорт для HTML-страниц
+window.login = login;
+window.logout = logout;
+window.register = register;
+window.checkToken = checkToken;
+window.initActivityTracker = initActivityTracker;
+
+// Экспорт для модульного кода
+export { login, logout, register, checkToken, initActivityTracker };

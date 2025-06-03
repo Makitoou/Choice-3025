@@ -71,19 +71,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const playButton = document.getElementById("play-btn");
   let isIntroShown = localStorage.getItem("introShown");
 
-  if (isIntroShown) {
-    playButton.onclick = () => window.open("html/play.html", "_self");
-    return;
-  }
+  if (playButton) {
+    playButton.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const isAuthenticated = await checkToken();
+      if (!isAuthenticated) {
+        window.location.href = "html/login.html";
+        return;
+      }
 
-  playButton.addEventListener("click", async (e) => {
-    e.preventDefault();
-    let typewriter;
-    let data;
-    let shouldShowCutscene = false;
+      if (isIntroShown) {
+        window.location.href = "html/play.html";
+        return;
+      }
 
-    const overlay = document.createElement("div");
-    overlay.style.cssText = `
+      let typewriter;
+      let data;
+      let shouldShowCutscene = false;
+
+      const overlay = document.createElement("div");
+      overlay.style.cssText = `
       position: fixed;
       top: 0;
       left: 0;
@@ -104,9 +111,9 @@ document.addEventListener("DOMContentLoaded", () => {
       opacity: 1;
       transition: opacity 0.5s ease;
     `;
-    const skipBtn = document.createElement("div");
-    skipBtn.textContent = "[ESC] Пропустить";
-    skipBtn.style.cssText = `
+      const skipBtn = document.createElement("div");
+      skipBtn.textContent = "[ESC] Пропустить";
+      skipBtn.style.cssText = `
       position: absolute;
       bottom: 20px;
       right: 20px;
@@ -116,21 +123,21 @@ document.addEventListener("DOMContentLoaded", () => {
       font-size: 1rem;
       transition: opacity 0.5s;
     `;
-    skipBtn.onmouseover = () => (skipBtn.style.opacity = "1");
-    skipBtn.onmouseout = () => (skipBtn.style.opacity = "0.7");
+      skipBtn.onmouseover = () => (skipBtn.style.opacity = "1");
+      skipBtn.onmouseout = () => (skipBtn.style.opacity = "0.7");
 
-    const textContainer = document.createElement("div");
+      const textContainer = document.createElement("div");
 
-    let isSkipped = false;
-    const skipHandler = () => {
-      if (isSkipped || !data) return;
-      isSkipped = true;
-      if (typewriter) {
-        typewriter.stop();
-      }
+      let isSkipped = false;
+      const skipHandler = () => {
+        if (isSkipped || !data) return;
+        isSkipped = true;
+        if (typewriter) {
+          typewriter.stop();
+        }
 
-      const overlay = document.createElement("div");
-      overlay.style.cssText = `
+        const overlay = document.createElement("div");
+        overlay.style.cssText = `
         position: fixed;
         top: 0;
         left: 0;
@@ -139,46 +146,47 @@ document.addEventListener("DOMContentLoaded", () => {
         background: black;
         z-index: 1000;
       `;
-      document.body.appendChild(overlay);
-      setTimeout(() => {
-        window.open("./html/play.html", "_self");
-      }, 3000);
-    };
-    skipBtn.addEventListener("click", skipHandler);
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") skipHandler();
-    });
-    overlay.appendChild(skipBtn);
-    overlay.style.display = "flex";
-    textContainer.style.visibility = "hidden";
-    overlay.appendChild(textContainer);
-    document.body.appendChild(overlay);
-
-    try {
-      const response = await fetch("./json/prehistory.json");
-      data = await response.json();
-      textContainer.style.visibility = "visible";
-
-      typewriter = typewriterEffect(textContainer, data.intro, 70);
-      await typewriter;
-
-      if (shouldShowCutscene || !cutsceneShown) {
-        showCutscene();
-        cutsceneShown = true;
+        document.body.appendChild(overlay);
         setTimeout(() => {
           window.open("./html/play.html", "_self");
-        }, 5000); // время показа кат-сцены в миллисекундах
-      }
-      localStorage.setItem("introShown", "true");
-      window.addEventListener("load", function () {
-        document.body.style.filter = "";
-        document.body.style.transition = "";
+        }, 3000);
+      };
+      skipBtn.addEventListener("click", skipHandler);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") skipHandler();
       });
-    } catch (error) {
-      console.error("Ошибка:", error);
-      window.open("./html/play.html", "_self");
-    }
-  });
+      overlay.appendChild(skipBtn);
+      overlay.style.display = "flex";
+      textContainer.style.visibility = "hidden";
+      overlay.appendChild(textContainer);
+      document.body.appendChild(overlay);
+
+      try {
+        const response = await fetch("./json/prehistory.json");
+        data = await response.json();
+        textContainer.style.visibility = "visible";
+
+        typewriter = typewriterEffect(textContainer, data.intro, 70);
+        await typewriter;
+
+        if (shouldShowCutscene || !cutsceneShown) {
+          showCutscene();
+          cutsceneShown = true;
+          setTimeout(() => {
+            window.open("./html/play.html", "_self");
+          }, 5000); // время показа кат-сцены в миллисекундах
+        }
+        localStorage.setItem("introShown", "true");
+        window.addEventListener("load", function () {
+          document.body.style.filter = "";
+          document.body.style.transition = "";
+        });
+      } catch (error) {
+        console.error("Ошибка:", error);
+        window.open("./html/play.html", "_self");
+      }
+    });
+  }
 });
 
 function typewriterEffect(element, text, speed = 50) {

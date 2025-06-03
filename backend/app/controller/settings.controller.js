@@ -1,26 +1,40 @@
-const db = require('../config/db.config.js');
-const Settings = db.settings;
+const db = require("../config/db.config.js");
+const Settings = db.Settings;
 
 // Обновление настроек пользователя
-exports.update = async (req, res) => {
+async function update(req, res) {
   try {
-    await Settings.update(req.body, {
-      where: { UserId: req.user.id }
+    const [settings, created] = await Settings.findOrCreate({
+      where: { UserId: req.user.id },
+      defaults: {
+        ...req.body,
+        UserId: req.user.id,
+      },
     });
-    res.status(200).send({ message: "Настройки обновлены!" });
+
+    if (!created) {
+      await settings.update(req.body);
+    }
+
+    res.status(200).send({ message: "Настройки сохранены!" });
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
-};
+}
 
 // Получение настроек пользователя
-exports.findByUser = async (req, res) => {
+async function findByUser(req, res) {
   try {
     const settings = await Settings.findOne({
-      where: { UserId: req.user.id }
+      where: { UserId: req.user.id },
     });
     res.status(200).send(settings);
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
+}
+
+module.exports = {
+  update,
+  findByUser,
 };

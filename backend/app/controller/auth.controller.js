@@ -1,19 +1,18 @@
 var db = require("../config/db.config");
 var config = require("../config/auth.config");
-var User = db.user;
+var User = db.User;
 var globalFunctions = require("../config/global.functions.js");
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
+var { authJwt } = require("../middleware");
 
 // регистрация пользователя
 exports.register = (req, res) => {
+  console.log("Тело запроса:", req.body);
   User.create({
     username: req.body.username,
-    password: bcrypt.hashSync(req.body.password, 10), // генерация хеша пароля
-    role: req.body.role,
-    firstname: req.body.firstname,
-    lastname: req.body.lastname,
-    middlename: req.body.middlename,
+    email: req.body.email,
+    passwordHash: bcrypt.hashSync(req.body.password, 10),
   })
     .then(() => {
       var result = {
@@ -43,7 +42,7 @@ exports.login = (req, res) => {
 
       var passwordIsValid = bcrypt.compareSync(
         req.body.password,
-        user.password
+        user.passwordHash
       );
       if (!passwordIsValid) {
         res.status(401).send({

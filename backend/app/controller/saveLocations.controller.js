@@ -1,5 +1,6 @@
 const db = require("../config/db.config.js");
 const SaveLocations = db.saveLocations;
+var { authJwt } = require("../middleware");
 
 // Обновление связи сохранение-локация
 exports.update = async (req, res) => {

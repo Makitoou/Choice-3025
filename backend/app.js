@@ -1,6 +1,11 @@
 var express = require("express");
+var cors = require("cors");
+var bodyParser = require("body-parser");
 var app = express();
 
+app.use(cors()); // разрешает все домены — подходит для разработки
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/api/inventory", require("./app/route/inventory.route.js"));
 app.use("/api/journal", require("./app/route/journalEntry.route.js"));
 app.use("/api/locations", require("./app/route/location.route.js"));
@@ -12,10 +17,6 @@ app.use("/api/users", require("./app/route/user.route.js"));
 
 var auth = require("./app/route/auth.route.js");
 auth(app);
-
-var bodyParser = require("body-parser");
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
 
 var db = require("./app/config/db.config.js"); // подключение настроек базы данных
 

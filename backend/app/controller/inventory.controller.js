@@ -1,4 +1,5 @@
 const db = require("../config/db.config.js");
+var { authJwt } = require("../middleware");
 const Inventory = db.inventory;
 
 // Создание записи инвентаря

@@ -1,5 +1,6 @@
 const db = require("../config/db.config.js");
 const JournalEntry = db.journalEntry;
+var { authJwt } = require("../middleware");
 
 // Создание записи журнала
 exports.create = async (req, res) => {

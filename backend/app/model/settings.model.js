@@ -2,7 +2,7 @@
 module.exports = (sequelize, DataTypes) => {
   const Settings = sequelize.define("Settings", {
     language: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM("ru", "en"),
       defaultValue: "ru",
     },
     soundVolume: {
@@ -16,6 +16,15 @@ module.exports = (sequelize, DataTypes) => {
     difficulty: {
       type: DataTypes.ENUM("easy", "normal", "hard"),
       defaultValue: "normal",
+    },
+    UserId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      unique: true,
+    },
+    vibration: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
   });
 

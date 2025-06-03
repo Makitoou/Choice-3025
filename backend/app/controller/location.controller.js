@@ -1,5 +1,6 @@
 const db = require("../config/db.config.js");
 const Location = db.location;
+var { authJwt } = require("../middleware");
 
 // Добавление новой локации
 exports.create = async (req, res) => {

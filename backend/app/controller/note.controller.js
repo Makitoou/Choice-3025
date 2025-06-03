@@ -1,5 +1,6 @@
 const db = require("../config/db.config.js");
 const Note = db.note;
+var { authJwt } = require("../middleware");
 
 // Создание заметки
 exports.create = async (req, res) => {

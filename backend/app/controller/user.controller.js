@@ -1,5 +1,6 @@
 const db = require("../config/db.config.js");
 const User = db.user;
+var { authJwt } = require("../middleware");
 
 // Регистрация пользователя
 exports.register = async (req, res) => {

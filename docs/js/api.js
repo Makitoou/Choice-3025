@@ -1,44 +1,57 @@
-const API_URL = "http://localhost:3000"; // Адрес вашего бэкенда
+const API_URL = "http://localhost:3000";
 
-// Функция для отправки запросов
-async function request(method, endpoint, data = null) {
-  const headers = {
+// Создаем экземпляр axios с базовыми настройками
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
     "Content-Type": "application/json",
-  };
+  },
+});
 
-  // Добавляем токен, если он есть
+// Интерцептор для добавления токена
+api.interceptors.request.use((config) => {
   const user = JSON.parse(localStorage.getItem("user"));
   if (user && user.accessToken) {
-    headers["x-access-token"] = user.accessToken;
+    config.headers["x-access-token"] = user.accessToken;
   }
+  return config;
+});
 
-  const config = {
-    method,
-    headers,
-  };
+// Интерцептор для обработки ошибок
+api.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    if (error.response) {
+      // Обработка HTTP ошибок
+      console.error("Ошибка API:", {
+        status: error.response.status,
+        message: error.response.data?.message || "Unknown error",
+      });
 
-  if (data) {
-    config.body = JSON.stringify(data);
-  }
-
-  try {
-    const response = await fetch(`${API_URL}${endpoint}`, config);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(
+        error.response.data?.message || `HTTP error ${error.response.status}`
+      );
+    } else if (error.request) {
+      // Запрос был сделан, но ответ не получен
+      console.error("Сервер не ответил:", error.request);
+      throw new Error(
+        "Сервер не отвечает. Проверьте подключение и CORS-настройки."
+      );
+    } else {
+      // Ошибка настройки запроса
+      console.error("Ошибка запроса:", error.message);
+      throw error;
     }
-    return await response.json();
-  } catch (error) {
-    console.error("Ошибка запроса:", error.message);
-    throw error;
   }
-}
+);
 
-// Методы для авторизации
+// Методы API
 async function login(user) {
-  const data = await request("POST", "/login", {
+  const data = await api.post("/api/login", {
     username: user.username,
     password: user.password,
   });
+
   if (data.accessToken) {
     localStorage.setItem("user", JSON.stringify(data));
   }
@@ -50,21 +63,34 @@ async function logout() {
 }
 
 async function register(user) {
-  return await request("POST", "/register", {
+  return api.post("/api/register", {
     username: user.username,
     password: user.password,
     email: user.email,
   });
 }
 
-async function refreshToken(user) {
-  const data = await request("POST", "/refreshToken", {
-    username: user.username,
+async function refreshToken() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user) throw new Error("User not found");
+
+  const data = await api.post("/api/refreshToken", {
+    refreshToken: user.refreshToken, // Добавьте refreshToken на сервере
   });
+
   if (data.accessToken) {
-    localStorage.setItem("user", JSON.stringify(data));
+    localStorage.setItem("user", JSON.stringify({ ...user, ...data }));
   }
   return data;
 }
 
-export { login, logout, register, refreshToken, request };
+// Добавьте методы для работы с настройками
+async function getSettings() {
+  return api.get("/api/settings");
+}
+
+async function updateSettings(settings) {
+  return api.put("/api/settings", settings);
+}
+
+export { login, logout, register, refreshToken, getSettings, updateSettings };
