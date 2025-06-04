@@ -4,6 +4,7 @@ const imagesData = [
   { id: 2, file: "file.png", x: 200, y: 800 },
   { id: 3, file: "diamonds.png", x: 1300, y: 80 },
   { id: 4, file: "bar.png", x: 1550, y: 70 },
+  { id: 5, file: "fuel.png", x: 800, y: -30 },
 ];
 document.addEventListener("DOMContentLoaded", function () {
   ensureSaveExists();
@@ -79,6 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
         container.innerHTML = "Ошибка загрузки инвентаря";
       }
     });
+  updateShipStatusUI();
 });
 function getItemName(item) {
   // если ты стакуешь по file
@@ -86,6 +88,7 @@ function getItemName(item) {
     "bar.png": "Металлические обломки",
     "file.png": "Записки отца",
     "diamonds.png": "Алмаз",
+    "fuel.png": "Канистра с топливом",
   };
 
   return nameMap[item.file] || "Неизвестный предмет";
@@ -188,6 +191,14 @@ window.collectArtifact = async function (artifactId) {
     return;
   }
 
+  const imageData = imagesData.find((img) => img.id === artifactId);
+  const file = imageData?.file;
+
+  if (!file) {
+    console.error("Не удалось определить file по artifactId", artifactId);
+    return;
+  }
+
   try {
     await fetch("http://localhost:3000/api/inventory", {
       method: "POST",
@@ -199,6 +210,7 @@ window.collectArtifact = async function (artifactId) {
         SaveId: saveId,
         itemId: artifactId,
         quantity: 1,
+        file,
         metadata: { collectedAt: new Date().toISOString() },
       }),
     });
@@ -217,3 +229,27 @@ function returnToPlanetSurface() {
   }, 1000);
 }
 window.returnToPlanetSurface = returnToPlanetSurface;
+async function updateShipStatusUI() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user?.accessToken) return;
+
+  try {
+    const res = await fetch("http://localhost:3000/api/ship-status", {
+      headers: {
+        "x-access-token": user.accessToken,
+      },
+    });
+    const data = await res.json();
+
+    const shieldsBar = document.getElementById("shields-bar");
+    const fuelBar = document.getElementById("fuel-bar");
+
+    shieldsBar.style.width = `${data.shields}%`;
+    shieldsBar.textContent = `${data.shields}%`;
+
+    fuelBar.style.width = `${data.fuel}%`;
+    fuelBar.textContent = `${data.fuel}%`;
+  } catch (err) {
+    console.error("Ошибка загрузки статуса корабля", err);
+  }
+}

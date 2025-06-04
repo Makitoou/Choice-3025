@@ -13,6 +13,67 @@ let selectedAnswerType = null;
 let isFinalTalkPhase = false;
 const urlParams = new URLSearchParams(window.location.search);
 const state = urlParams.get("state");
+
+const imagesData = [
+  { id: 1, file: "bar.png" },
+  { id: 2, file: "file.png" },
+  { id: 3, file: "diamonds.png" },
+  { id: 4, file: "bar.png" },
+  { id: 5, file: "fuel.png" },
+];
+
+function getItemName(item) {
+  const nameMap = {
+    "bar.png": "Металлические обломки",
+    "file.png": "Записки отца",
+    "diamonds.png": "Алмаз",
+    "fuel.png": "Канистра с топливом",
+  };
+  return nameMap[item.file] || "Неизвестный предмет";
+}
+
+function getCurrentSaveId() {
+  return localStorage.getItem("currentSaveId");
+}
+function createInventoryUI() {
+  if (document.getElementById("inventoryPanel")) return;
+
+  const panel = document.createElement("div");
+  panel.id = "inventoryPanel";
+  panel.className = "inventory hidden";
+  panel.style.position = "fixed";
+  panel.style.top = "15%";
+  panel.style.left = "50%";
+  panel.style.transform = "translateX(-50%)";
+  panel.style.width = "400px";
+  panel.style.maxHeight = "60%";
+  panel.style.background = "#1e1e2f";
+  panel.style.border = "2px solid #8a2be2";
+  panel.style.borderRadius = "10px";
+  panel.style.zIndex = "9999";
+  panel.style.padding = "20px";
+  panel.style.color = "white";
+  panel.style.overflowY = "auto";
+
+  panel.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h4>Инвентарь</h4>
+      <button id="closeInventory" class="btn btn-sm btn-outline-light">✕</button>
+    </div>
+    <div id="inventoryItems" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;"></div>
+  `;
+
+  document.body.appendChild(panel);
+
+  document.getElementById("closeInventory").addEventListener("click", () => {
+    panel.classList.add("hidden");
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") panel.classList.add("hidden");
+  });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   if (state === "surface_zoomed") {
     surfaceHeightValue = 0.4;
@@ -105,10 +166,151 @@ document.addEventListener("DOMContentLoaded", async () => {
   dialogContainer.classList.add("dialog-hidden");
   await initGame();
 
+  updateShipStatusUI();
+  createInventoryUI();
+
+  const inventoryBtn = document.querySelector("button.btn-outline-purple");
+  if (inventoryBtn) {
+    inventoryBtn.addEventListener("click", async () => {
+      const panel = document.getElementById("inventoryPanel");
+      panel.classList.remove("hidden");
+
+      const container = document.getElementById("inventoryItems");
+      container.innerHTML = "Загрузка...";
+
+      const saveId = getCurrentSaveId();
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!saveId || !user?.accessToken) {
+        container.innerHTML = "Нет доступа";
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `http://localhost:3000/api/inventory/save/${saveId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "x-access-token": user.accessToken,
+            },
+          }
+        );
+
+        const items = await res.json();
+
+        // Стакуем по file
+        const stacked = {};
+        items.forEach((item) => {
+          const imageInfo = imagesData.find((img) => img.id === item.itemId);
+          const fileKey = imageInfo ? imageInfo.file : "default.png";
+
+          if (!stacked[fileKey]) {
+            stacked[fileKey] = {
+              quantity: item.quantity,
+              file: fileKey,
+            };
+          } else {
+            stacked[fileKey].quantity += item.quantity;
+          }
+        });
+
+        container.innerHTML = "";
+
+        Object.values(stacked).forEach((item) => {
+          const itemBox = document.createElement("div");
+          itemBox.className = "inventory-item";
+          itemBox.dataset.file = item.file;
+          itemBox.innerHTML = `
+          <img src="../images/${
+            item.file
+          }" alt="item" width="48" title="${getItemName(item)}">
+          <p class="m-0">x${item.quantity}</p>
+        `;
+          container.appendChild(itemBox);
+          itemBox.addEventListener("click", () => {
+            if (item.file === "fuel.png") {
+              showRefuelButton();
+            }
+          });
+        });
+      } catch (err) {
+        container.innerHTML = "Ошибка загрузки";
+        console.error(err);
+      }
+    });
+  }
+
   if (currentPlayer) {
     updateLocation(state === "surface_zoomed" ? "surface" : "cave");
   }
 });
+function isShipVisible() {
+  const ship = document.getElementById("spacecraftImage");
+  return ship !== null;
+}
+function showRefuelButton() {
+  // Удалить предыдущую, если есть
+  const oldBtn = document.getElementById("refuelButton");
+  if (oldBtn) oldBtn.remove();
+
+  const btn = document.createElement("button");
+  btn.textContent = "Заправить корабль";
+  btn.id = "refuelButton";
+  btn.className = "btn btn-warning mt-2";
+
+  btn.onclick = async () => {
+    const token = JSON.parse(localStorage.getItem("user"))?.accessToken;
+    if (!isShipVisible()) {
+      alert("Корабль должен быть виден для заправки!");
+      return;
+    }
+
+    try {
+      // 1. Запрос на удаление 1 канистры
+      await axios.post(
+        "http://localhost:3000/api/inventory/use",
+        { file: "fuel.png" },
+        {
+          headers: {
+            "x-access-token": token,
+          },
+        }
+      ); // fuel.png
+
+      // 2. Получить текущий статус
+      const { data } = await axios.get(
+        "http://localhost:3000/api/ship-status",
+        {
+          headers: {
+            "x-access-token": token,
+          },
+        }
+      );
+      const newFuel = Math.min(data.fuel + 10, 100);
+
+      // 3. Обновить топливо
+      await axios.put(
+        "http://localhost:3000/api/ship-status",
+        { fuel: newFuel },
+        {
+          headers: {
+            "x-access-token": token,
+          },
+        }
+      );
+
+      // 4. Обновить UI
+      updateShipStatusUI();
+
+      alert("Корабль заправлен на +10%");
+    } catch (err) {
+      alert("Ошибка при заправке");
+      console.error(err);
+    }
+  };
+
+  document.getElementById("inventoryPanel").appendChild(btn);
+}
 
 function typewriterEffect(
   element,
@@ -1156,6 +1358,28 @@ function drawSceneWithCave() {
   setTimeout(() => {
     createEnterImage();
   }, 2000);
+}
+async function updateShipStatusUI() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user?.accessToken) return;
+
+  try {
+    const res = await fetch("http://localhost:3000/api/ship-status", {
+      headers: { "x-access-token": user.accessToken },
+    });
+    const data = await res.json();
+
+    const shieldsBar = document.getElementById("shields-bar");
+    const fuelBar = document.getElementById("fuel-bar");
+
+    shieldsBar.style.width = `${data.shields}%`;
+    shieldsBar.textContent = `${data.shields}%`;
+
+    fuelBar.style.width = `${data.fuel}%`;
+    fuelBar.textContent = `${data.fuel}%`;
+  } catch (err) {
+    console.error("Ошибка загрузки статуса корабля", err);
+  }
 }
 // function drawSceneWithSpaceCraft() {
 //   document.getElementById("alienContainer").style.display = "none";

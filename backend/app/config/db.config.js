@@ -46,6 +46,7 @@ db.sequelize = sequelize;
 db.User = require("../model/user.model.js")(sequelize, Sequelize);
 db.Settings = require("../model/settings.model.js")(sequelize, Sequelize);
 db.Save = require("../model/save.model.js")(sequelize, Sequelize);
+db.shipStatus = require("../model/shipStatus.model.js")(sequelize, Sequelize);
 db.Location = require("../model/location.model.js")(sequelize, Sequelize);
 db.Inventory = require("../model/inventory.model.js")(sequelize, Sequelize);
 db.JournalEntry = require("../model/journalEntry.model.js")(

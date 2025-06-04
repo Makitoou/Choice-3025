@@ -19,7 +19,7 @@ exports.create = async (req, res) => {
 exports.findAll = async (req, res) => {
   try {
     const saves = await Save.findAll({
-      where: { UserId: req.user.id },
+      where: { UserId: req.userId },
       include: [
         { model: db.Inventory },
         { model: db.JournalEntry },
@@ -47,7 +47,7 @@ exports.delete = async (req, res) => {
 exports.getLatest = async (req, res) => {
   try {
     const save = await db.Save.findOne({
-      where: { UserId: req.user.id },
+      where: { UserId: req.userId },
       order: [["timestamp", "DESC"]],
     });
 
@@ -69,20 +69,37 @@ exports.getLatest = async (req, res) => {
 };
 exports.initSave = async (req, res) => {
   try {
+    const token = req.headers["x-access-token"];
+    const userId = req.userId;
+
+    console.log("🔑 initSave — userId:", userId);
+    console.log("📦 Тело запроса:", req.body);
+
+    if (!userId) {
+      return res
+        .status(401)
+        .send({ message: "⛔ Пользователь не авторизован" });
+    }
+
     const save = await Save.create({
-      name: req.body.name || "Автосохранение",
-      UserId: req.user.id,
+      name: req.body.name || "Новое сохранение",
       timestamp: new Date(),
       resources: {},
       gameState: JSON.stringify({ phase: "intro" }),
       isAutosave: false,
+      UserId: userId,
     });
 
+    console.log("✅ Сохранение создано:", save.id);
     res.status(201).send(save);
   } catch (error) {
-    res.status(500).send({ message: error.message });
+    console.error("❌ Ошибка в initSave:", error);
+    res.status(500).send({
+      message: error.message || "Ошибка при создании сохранения",
+    });
   }
 };
+
 exports.findOne = async (req, res) => {
   try {
     const save = await Save.findByPk(req.params.id);

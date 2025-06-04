@@ -119,7 +119,7 @@ function resetInactivityTimer() {
   inactivityTimer = setTimeout(() => {
     logout();
     window.location.href = "login.html";
-  }, 15 * 60 * 1000);
+  }, 60 * 60 * 1000);
 }
 
 function initActivityTracker() {

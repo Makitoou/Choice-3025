@@ -11,10 +11,11 @@ app.use("/api/inventory", require("./app/route/inventory.route.js"));
 app.use("/api/journal", require("./app/route/journalEntry.route.js"));
 app.use("/api/locations", require("./app/route/location.route.js"));
 app.use("/api/notes", require("./app/route/note.route.js"));
-app.use("/api/saves", require("./app/route/save.route.js"));
 app.use("/api/save-locations", require("./app/route/saveLocations.route.js"));
 app.use("/api/settings", require("./app/route/settings.route.js"));
 app.use("/api/users", require("./app/route/user.route.js"));
+
+require("./app/route/shipStatus.route.js")(app);
 
 var auth = require("./app/route/auth.route.js");
 auth(app);

@@ -124,10 +124,33 @@
         >
           <div class="pt-3 w-100 px-3 text-center">
             <h5 class="text-purple neon-title">Статус</h5>
-            <div class="mt-4">
-              <p class="text-white m-0">Энергия: 100%</p>
-              <p class="text-white m-0">Щиты: 75%</p>
-              <p class="text-white m-0">Топливо: 50%</p>
+            <div id="right-panel" class="status-panel" style="color: white;">
+              <div class="mb-2">
+                <label>Щиты</label>
+                <div class="progress">
+                  <div
+                    id="shields-bar"
+                    class="progress-bar bg-info"
+                    role="progressbar"
+                    style="width: 0%; color: black"
+                  >
+                    0%
+                  </div>
+                </div>
+              </div>
+              <div class="mb-2">
+                <label>Топливо</label>
+                <div class="progress">
+                  <div
+                    id="fuel-bar"
+                    class="progress-bar bg-warning"
+                    role="progressbar"
+                    style="width: 0%; color: black"
+                  >
+                    0%
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -136,6 +159,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script type="module" src="../js/auth-protect.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="../js/background.js"></script>
     <script type="module" src="../js/background.js"></script>
   </body>
 </html>
