@@ -1093,9 +1093,6 @@ function showCutsceneForPlanet() {
 
   animate();
 }
-// Сделаем функции доступными глобально
-window.collectArtifact = collectArtifact;
-window.updateLocation = updateLocation;
 
 // Запуск игры
 async function initGame() {
