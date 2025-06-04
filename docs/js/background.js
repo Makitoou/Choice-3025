@@ -1,4 +1,12 @@
+import { savePhase, ensureSaveExists, getAccessToken } from "./save-manager.js";
 let surfaceHeightValue = 0.2;
+const currentPlayer = {
+  inventory: [],
+  location: null,
+};
+function updateLocation(locationName) {
+  currentPlayer.location = locationName;
+}
 let enterImage = null;
 let imagesOnSurface = [];
 let selectedAnswerType = null;
@@ -132,6 +140,7 @@ function typewriterEffect(
         } else {
           dialogContainer.classList.add("hidden");
           alienContainer.classList.add("exit");
+          savePhase("landed");
 
           setTimeout(() => {
             dialogContainer.style.display = "none";
@@ -464,6 +473,7 @@ document.getElementById("exploreButton").addEventListener("click", () => {
     });
     animateSurfaceSize(0.5, 2000);
     isExploreButtonClicked = true;
+    savePhase("explored");
     document.getElementById("exploreButton").disabled = true;
   }
 });
@@ -518,7 +528,7 @@ function animateSurfaceSize(newSize, duration) {
       requestAnimationFrame(animation);
     } else {
       surfaceHeightValue = targetHeight;
-      areImagesVisible = false;
+      var areImagesVisible = false;
       if (!areImagesVisible) {
         createEnterImage();
         // createSurfaceImages();
@@ -569,11 +579,14 @@ function createEnterImage() {
     enterImage.style.filter = "";
   });
 
+  savePhase("cave");
+
   enterImage.addEventListener("click", function () {
     document.body.style.transition = "filter 1s ease";
     document.body.style.filter = "brightness(0)";
 
     setTimeout(() => {
+      savePhase("into-cave");
       window.location.href = "cave.html";
     }, 1000);
   });
@@ -813,6 +826,7 @@ async function showPlanetChoices() {
                   spacecraft.style.left = "200px";
                   spacecraft.style.opacity = "1";
                 }, 300);
+                savePhase("spacecraft");
 
                 // Добавляем обработчики событий на корабль
                 spacecraft.addEventListener("mouseover", () => {
@@ -1082,3 +1096,107 @@ function showCutsceneForPlanet() {
 // Сделаем функции доступными глобально
 window.collectArtifact = collectArtifact;
 window.updateLocation = updateLocation;
+
+// Запуск игры
+async function initGame() {
+  await ensureSaveExists();
+
+  const saveId = localStorage.getItem("currentSaveId");
+  const token = getAccessToken();
+  if (!saveId || !token) return;
+
+  try {
+    const res = await axios.get(`http://localhost:3000/api/save/${saveId}`, {
+      headers: { "x-access-token": token },
+    });
+
+    let phase = "intro";
+    const rawState = res.data.gameState;
+
+    if (typeof rawState === "string") {
+      try {
+        const parsed = JSON.parse(rawState);
+        phase = parsed.phase || "intro";
+      } catch {
+        console.warn("⚠️ Не удалось распарсить gameState");
+      }
+    } else if (typeof rawState === "object") {
+      phase = rawState.phase || "intro";
+    }
+
+    console.log("🔄 Восстановлена фаза:", phase);
+
+    switch (phase) {
+      case "cave":
+        drawSceneWithCave();
+        break;
+      case "into-cave":
+        window.location.href = "cave.html?resume=true";
+        break;
+      case "space-craft":
+        drawSceneWithSpaceCraft();
+    }
+  } catch (err) {
+    console.error("❌ Не удалось загрузить фазу:", err.message);
+  }
+}
+
+function drawSceneWithCave() {
+  // Скрыть всё, что связано с пришельцем и диалогом
+  document.getElementById("alienContainer").style.display = "none";
+  document.getElementById("exploreButton").style.display = "none";
+  document.getElementById("talkButton").style.display = "none";
+  document.getElementById("leaveButton").style.display = "none";
+  document.getElementById("dialogContainer").style.display = "none";
+
+  // Показать вход в пещеру
+  animateSurfaceSize(0.5, 2000);
+  planets.forEach((planet) => {
+    animatePlanetSize(planet, planet.radius * 0.5, 1000);
+  });
+  const surfaceHeight = canvas.height * surfaceHeightValue;
+  drawSurface(surfaceHeight);
+  setTimeout(() => {
+    createEnterImage();
+  }, 2000);
+}
+// function drawSceneWithSpaceCraft() {
+//   document.getElementById("alienContainer").style.display = "none";
+//   document.getElementById("exploreButton").style.display = "none";
+//   document.getElementById("talkButton").style.display = "none";
+//   document.getElementById("leaveButton").style.display = "none";
+//   document.getElementById("dialogContainer").style.display = "none";
+
+//   const darkOverlay = document.createElement("div");
+//   darkOverlay.id = "darkOverlay";
+//   darkOverlay.style.position = "fixed";
+//   darkOverlay.style.top = "0";
+//   darkOverlay.style.left = "0";
+//   darkOverlay.style.width = "100%";
+//   darkOverlay.style.height = "100%";
+//   darkOverlay.style.backgroundColor = "rgba(0,0,0,0.7)";
+//   darkOverlay.style.zIndex = "999";
+//   darkOverlay.style.opacity = "0";
+//   darkOverlay.style.transition = "opacity 1s ease";
+//   document.body.appendChild(darkOverlay);
+
+//   // Создаем элемент корабля
+//   const spacecraft = document.createElement("img");
+//   spacecraft.id = "spacecraftImage";
+//   spacecraft.src = "../images/spacecraft.png";
+//   spacecraft.alt = "Spacecraft";
+//   spacecraft.style.position = "fixed";
+//   spacecraft.style.bottom = "50px";
+//   spacecraft.style.width = "400px";
+//   spacecraft.style.height = "800px";
+//   spacecraft.style.opacity = "0";
+//   spacecraft.style.zIndex = "1002";
+//   spacecraft.style.transition = "left 1.5s ease, opacity 1.5s ease";
+//   document.body.appendChild(spacecraft);
+
+//   // Плавное появление корабля
+//   setTimeout(() => {
+//     spacecraft.style.left = "200px";
+//     spacecraft.style.opacity = "1";
+//   }, 300);
+// }

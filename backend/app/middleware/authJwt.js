@@ -15,7 +15,7 @@ exports.verifyToken = (req, res, next) => {
         .send({ message: "⛔ Невалидный или просроченный токен" });
     }
 
-    req.user = { id: decoded.id }; // 🔐 теперь доступен как req.user.id
+    req.user = { id: decoded.id };
     next();
   });
 };

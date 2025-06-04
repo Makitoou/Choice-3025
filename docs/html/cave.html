@@ -53,7 +53,18 @@
                 </svg>
               </li>
               <li class="mb-3">
-                <button class="btn btn-outline-purple w-100">Инвентарь</button>
+                <button
+                  class="btn btn-outline-purple w-100 position-relative"
+                  id="inventoryButton"
+                >
+                  Инвентарь
+                  <span
+                    id="inventoryBadge"
+                    class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle d-none"
+                  >
+                    <span class="visually-hidden">Новый предмет</span>
+                  </span>
+                </button>
               </li>
               <li class="mb-3">
                 <button class="btn btn-outline-purple w-100">Журнал</button>
@@ -88,6 +99,6 @@
       </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/cave.js"></script>
+    <script type="module" src="../js/cave.js"></script>
   </body>
 </html>

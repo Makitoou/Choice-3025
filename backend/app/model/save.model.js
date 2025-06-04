@@ -1,12 +1,26 @@
 // models/Save.js
 module.exports = (sequelize, DataTypes) => {
   const Save = sequelize.define("Save", {
-    name: DataTypes.STRING, // Название сохранения
-    timestamp: DataTypes.DATE, // Время последнего сохранения
-    resources: DataTypes.JSON, // { energy: 100, food: 50, ... }
-    gameState: DataTypes.JSON, // Текущее состояние игры
-    isAutosave: DataTypes.BOOLEAN, // Автосохранение или ручное
-  });
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: "Автосохранение",
+  },
+  timestamp: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+  },
+  resources: DataTypes.JSON,
+  gameState: {
+    type: DataTypes.JSON,
+    defaultValue: {}, // важно!
+  },
+  isAutosave: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+  },
+});
+
 
   Save.associate = (models) => {
     Save.belongsTo(models.User);

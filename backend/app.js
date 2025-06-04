@@ -6,6 +6,7 @@ var app = express();
 app.use(cors()); // разрешает все домены — подходит для разработки
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use("/api/save", require("./app/route/save.route.js"));
 app.use("/api/inventory", require("./app/route/inventory.route.js"));
 app.use("/api/journal", require("./app/route/journalEntry.route.js"));
 app.use("/api/locations", require("./app/route/location.route.js"));

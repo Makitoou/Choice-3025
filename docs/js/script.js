@@ -1,3 +1,4 @@
+import { ensureSaveExists, savePhase, getAccessToken } from "./save-manager.js";
 let cutsceneShown = false;
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("spaceCanvas");
@@ -80,86 +81,103 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      if (isIntroShown) {
+      const saveId = await ensureSaveExists();
+      const token = getAccessToken();
+
+      let currentPhase = "intro";
+
+      try {
+        const res = await axios.get(
+          `http://localhost:3000/api/save/${saveId}`,
+          {
+            headers: { "x-access-token": token },
+          }
+        );
+
+        let gameState = res.data.gameState;
+
+        if (typeof gameState === "string") {
+          try {
+            gameState = JSON.parse(gameState);
+          } catch {
+            gameState = {};
+          }
+        }
+
+        currentPhase = gameState.phase || "intro";
+      } catch (err) {
+        console.warn("⚠️ Не удалось загрузить сохранение:", err.message);
+      }
+
+      console.log("📦 Текущая фаза:", currentPhase);
+
+      if (currentPhase !== "intro") {
         window.location.href = "html/play.html";
         return;
       }
 
+      await savePhase("intro");
+      
       let typewriter;
       let data;
-      let shouldShowCutscene = false;
+      let isSkipped = false;
 
       const overlay = document.createElement("div");
       overlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #000;
-      color: #8A2BE2;
-      font-family: 'Space Mono', monospace;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20%;
-      text-align: center;
-      font-size: 1.5rem;
-      line-height: 2;
-      cursor: pointer;
-      opacity: 1;
-      transition: opacity 0.5s ease;
-    `;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #000;
+    color: #8A2BE2;
+    font-family: 'Space Mono', monospace;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20%;
+    text-align: center;
+    font-size: 1.5rem;
+    line-height: 2;
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  `;
+
       const skipBtn = document.createElement("div");
       skipBtn.textContent = "[ESC] Пропустить";
       skipBtn.style.cssText = `
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      color: #8A2BE2;
-      opacity: 0.7;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: opacity 0.5s;
-    `;
+    position: absolute;
+    bottom: 20px; right: 20px;
+    color: #8A2BE2;
+    opacity: 0.7;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: opacity 0.5s;
+  `;
       skipBtn.onmouseover = () => (skipBtn.style.opacity = "1");
       skipBtn.onmouseout = () => (skipBtn.style.opacity = "0.7");
 
       const textContainer = document.createElement("div");
+      textContainer.style.visibility = "hidden";
+      overlay.appendChild(skipBtn);
+      overlay.appendChild(textContainer);
+      document.body.appendChild(overlay);
 
-      let isSkipped = false;
       const skipHandler = () => {
         if (isSkipped || !data) return;
         isSkipped = true;
-        if (typewriter) {
-          typewriter.stop();
-        }
+        if (typewriter) typewriter.stop();
 
-        const overlay = document.createElement("div");
-        overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: black;
-        z-index: 1000;
-      `;
-        document.body.appendChild(overlay);
-        setTimeout(() => {
-          window.open("./html/play.html", "_self");
-        }, 3000);
+        setTimeout(async () => {
+          await savePhase("flight");
+          window.location.href = "html/play.html";
+        }, 1000);
       };
+
       skipBtn.addEventListener("click", skipHandler);
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") skipHandler();
       });
-      overlay.appendChild(skipBtn);
-      overlay.style.display = "flex";
-      textContainer.style.visibility = "hidden";
-      overlay.appendChild(textContainer);
-      document.body.appendChild(overlay);
 
       try {
         const response = await fetch("./json/prehistory.json");
@@ -169,21 +187,16 @@ document.addEventListener("DOMContentLoaded", () => {
         typewriter = typewriterEffect(textContainer, data.intro, 70);
         await typewriter;
 
-        if (shouldShowCutscene || !cutsceneShown) {
-          showCutscene();
-          cutsceneShown = true;
-          setTimeout(() => {
-            window.open("./html/play.html", "_self");
-          }, 5000); // время показа кат-сцены в миллисекундах
-        }
-        localStorage.setItem("introShown", "true");
-        window.addEventListener("load", function () {
-          document.body.style.filter = "";
-          document.body.style.transition = "";
-        });
+        // Кат-сцена
+        showCutscene();
+
+        setTimeout(async () => {
+          await savePhase("flight");
+          window.location.href = "html/play.html";
+        }, 5000); // длина кат-сцены
       } catch (error) {
-        console.error("Ошибка:", error);
-        window.open("./html/play.html", "_self");
+        console.error("Ошибка загрузки предыстории:", error);
+        window.location.href = "html/play.html";
       }
     });
   }
@@ -327,4 +340,35 @@ function showCutscene() {
   };
 
   animate();
+}
+
+async function initGame() {
+  const saveId = localStorage.getItem("currentSaveId");
+  const token = getAccessToken();
+  if (!saveId || !token) return;
+
+  try {
+    const res = await axios.get(`http://localhost:3000/api/save/${saveId}`, {
+      headers: { "x-access-token": token },
+    });
+
+    const phase = res.data.gameState?.phase || "intro";
+    console.log("🔄 Восстановлена фаза:", phase);
+
+    switch (phase) {
+      case "intro":
+        break; // начнётся обычная кат-сцена
+      case "flight":
+        skipIntroAndStartFlight();
+        break;
+      case "landed":
+        drawSceneWithAlien();
+        break;
+      case "explored":
+        drawSceneWithCave();
+        break;
+    }
+  } catch (err) {
+    console.error("❌ Не удалось загрузить фазу:", err.message);
+  }
 }

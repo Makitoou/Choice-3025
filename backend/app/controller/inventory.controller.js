@@ -1,6 +1,6 @@
 const db = require("../config/db.config.js");
-var { authJwt } = require("../middleware");
-const Inventory = db.inventory;
+var { authJwt } = require("../middleware/authJwt.js");
+const Inventory = db.Inventory;
 
 // Создание записи инвентаря
 exports.create = async (req, res) => {

@@ -3,7 +3,11 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../controller/save.controller.js");
 
-var { authJwt } = require("../middleware");
+const authJwt = require("../middleware/authJwt.js");
+router.get("/:id", authJwt.verifyToken, controller.findOne);
+router.put("/:id", authJwt.verifyToken, controller.update);
+router.get("/latest", authJwt.verifyToken, controller.getLatest);
+router.post("/init", authJwt.verifyToken, controller.initSave);
 router.post("/", authJwt.verifyToken, controller.create);
 router.get("/", authJwt.verifyToken, controller.findAll);
 router.delete("/:id", authJwt.verifyToken, controller.delete);

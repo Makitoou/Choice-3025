@@ -94,3 +94,11 @@ async function updateSettings(settings) {
 }
 
 export { login, logout, register, refreshToken, getSettings, updateSettings };
+
+export const getLatestSave = async () => {
+  const token = getUserToken();
+  const response = await axios.get(`${API_BASE}/save/latest`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
