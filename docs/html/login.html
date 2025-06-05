@@ -46,7 +46,7 @@
             const user = await window.login({ username, password });
             if (user.accessToken) {
               window.showToast("Успешный вход ✅");
-              window.location.href = "play.html";
+              window.location.href = "../index.html";
             }
           } catch (error) {
             window.showToast("Ошибка входа ❌");

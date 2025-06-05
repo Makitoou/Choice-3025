@@ -58,13 +58,13 @@
               />
               <path d="M9 9a1 1 0 1 0 2 0 1 1 0 0 0-2 0" />
             </svg>
-            <h5 class="text-purple neon-title">Навигация</h5>
+            <h5 class="text-purple title">Навигация</h5>
             <ul class="list-unstyled mt-4 w-100">
               <li class="mb-3"></li>
               <li class="mb-3">
                 <button class="btn btn-outline-purple w-100">Инвентарь</button>
               </li>
-              <li class="mb-3">
+              <li class="mb-3" style="padding-top: 10px">
                 <button class="btn btn-outline-purple w-100">Журнал</button>
               </li>
             </ul>
@@ -123,11 +123,11 @@
           "
         >
           <div class="pt-3 w-100 px-3 text-center">
-            <h5 class="text-purple neon-title">Статус</h5>
-            <div id="right-panel" class="status-panel" style="color: white;">
-              <div class="mb-2">
-                <label>Щиты</label>
-                <div class="progress">
+            <h5 class="text-purple title">Статус</h5>
+            <div id="right-panel" class="status-panel" style="color: white">
+              <div class="mb-2" style="padding-top: 20px">
+                <label>Прочность корабля</label>
+                <div class="progress" style="height: 3em; width: 100%">
                   <div
                     id="shields-bar"
                     class="progress-bar bg-info"
@@ -138,9 +138,9 @@
                   </div>
                 </div>
               </div>
-              <div class="mb-2">
-                <label>Топливо</label>
-                <div class="progress">
+              <div class="mb-2" style="padding-top: 20px">
+                <label>Запасы горючего</label>
+                <div class="progress" style="height: 3em; width: 100%">
                   <div
                     id="fuel-bar"
                     class="progress-bar bg-warning"
@@ -155,6 +155,14 @@
           </div>
         </div>
       </div>
+    </div>
+    <div
+      aria-live="polite"
+      aria-atomic="true"
+      class="position-fixed end-0 p-3"
+      style="z-index: 9999; top: 0; right: 8vw !important; width: 50%"
+    >
+      <div id="toastContainer" class="toast-container"></div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script type="module" src="../js/auth-protect.js"></script>

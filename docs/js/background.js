@@ -73,6 +73,34 @@ function createInventoryUI() {
     if (e.key === "Escape") panel.classList.add("hidden");
   });
 }
+function showToast(message, type = "info") {
+  const colors = {
+    success: "bg-success text-white",
+    error: "bg-danger text-white",
+    info: "bg-primary text-white",
+    warning: "bg-warning text-dark",
+  };
+
+  const toast = document.createElement("div");
+  toast.className = `toast align-items-center ${colors[type] || ""}`;
+  toast.role = "alert";
+  toast.ariaLive = "assertive";
+  toast.ariaAtomic = "true";
+  toast.setAttribute("data-bs-delay", "3000");
+
+  toast.innerHTML = `
+    <div class="d-flex">
+      <div class="toast-body">${message}</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Закрыть"></button>
+    </div>
+  `;
+
+  document.getElementById("toastContainer").appendChild(toast);
+
+  // Инициализировать и показать
+  const bsToast = new bootstrap.Toast(toast);
+  bsToast.show();
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   if (state === "surface_zoomed") {
@@ -261,7 +289,7 @@ function showRefuelButton() {
   btn.onclick = async () => {
     const token = JSON.parse(localStorage.getItem("user"))?.accessToken;
     if (!isShipVisible()) {
-      alert("Корабль должен быть виден для заправки!");
+      showToast("Корабль должен быть виден для заправки!", "warning");
       return;
     }
 
@@ -302,9 +330,9 @@ function showRefuelButton() {
       // 4. Обновить UI
       updateShipStatusUI();
 
-      alert("Корабль заправлен на +10%");
+      showToast("Корабль заправлен на +10%", "success");
     } catch (err) {
-      alert("Ошибка при заправке");
+      showToast("Ошибка при заправке", "error");
       console.error(err);
     }
   };
@@ -402,7 +430,7 @@ function init() {
       x: canvas.width * 0.15,
       y: canvas.height / 1.8,
       radius: 400,
-      color: "#0000FF",
+      color: "#8A2BE2",
       rings: true,
       glow: true,
       speedX: 0,

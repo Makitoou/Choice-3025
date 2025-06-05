@@ -5,10 +5,10 @@ const Settings = db.Settings;
 async function update(req, res) {
   try {
     const [settings, created] = await Settings.findOrCreate({
-      where: { UserId: req.user.id },
+      where: { UserId: req.userId },
       defaults: {
         ...req.body,
-        UserId: req.user.id,
+        UserId: req.userId,
       },
     });
 
@@ -26,7 +26,7 @@ async function update(req, res) {
 async function findByUser(req, res) {
   try {
     const settings = await Settings.findOne({
-      where: { UserId: req.user.id },
+      where: { UserId: req.userId },
     });
     res.status(200).send(settings);
   } catch (error) {
