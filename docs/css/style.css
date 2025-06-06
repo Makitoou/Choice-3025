@@ -154,3 +154,9 @@ svg {
 .old-line.removed {
   opacity: 0;
 }
+.btn-outline {
+  background-color: #8a2be2;
+  color: white;
+  border-color: #8a2be2;
+  transition: all 0.3s ease;
+}
